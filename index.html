@@ -14,9 +14,27 @@ html,body{height:100%;background:var(--ink);overflow:hidden;font-family:"Courier
 #ui{position:fixed;inset:0;pointer-events:none}
 .panel{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:auto;background:rgba(7,8,15,.9)}
 .panel.on{display:flex}
-.card{box-sizing:border-box;width:min(94vw,860px);max-height:92vh;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;border:1px solid #2b3044;background:linear-gradient(180deg,#12141f,#0b0c14);padding:16px 20px;box-shadow:0 0 0 6px #07080f,0 0 40px rgba(79,214,196,.08)}
+.card{box-sizing:border-box;width:min(94vw,860px);max-height:calc(var(--vhpx,100vh)*.92);overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;border:1px solid #2b3044;background:linear-gradient(180deg,#12141f,#0b0c14);padding:16px 20px;box-shadow:0 0 0 6px #07080f,0 0 40px rgba(79,214,196,.08)}
 h1{font-size:clamp(22px,4.5vw,40px);letter-spacing:.35em;color:var(--amber);font-weight:400;animation:logoGlow 3.5s ease-in-out infinite}
 @keyframes logoGlow{0%,100%{text-shadow:0 0 8px rgba(242,180,65,.25),0 0 30px rgba(242,180,65,.12)}50%{text-shadow:0 0 14px rgba(242,180,65,.6),0 0 46px rgba(242,180,65,.28),0 0 90px rgba(79,214,196,.18)}}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+h1{animation:logoGlow 3.5s ease-in-out infinite,logoFloat 6s ease-in-out infinite}
+@keyframes slotIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:none}}
+#pTitle .slot{animation:slotIn .55s ease both}
+#pTitle .slot:nth-child(1){animation-delay:.15s}#pTitle .slot:nth-child(2){animation-delay:.24s}#pTitle .slot:nth-child(3){animation-delay:.33s}#pTitle .slot:nth-child(4){animation-delay:.42s}#pTitle .slot:nth-child(5){animation-delay:.51s}#pTitle .slot:nth-child(6){animation-delay:.6s}
+#pTitle .slot{transition:border-color .25s,box-shadow .25s,transform .18s}
+#pTitle .slot:active{transform:scale(.985)}
+#pTitle .slot.pick{box-shadow:0 0 14px rgba(79,214,196,.14),inset 0 0 18px rgba(79,214,196,.05)}
+#pTitle .slot canvas{transition:transform .3s}
+#pTitle .slot:hover canvas{transform:scale(1.08)}
+#pTitle button{transition:box-shadow .25s,transform .15s}
+#pTitle button:hover{box-shadow:0 0 16px rgba(242,180,65,.25)}
+#pTitle button:active{transform:translateY(1px)}
+#pTitle .go{animation:goPulse 2.8s ease-in-out infinite}
+@keyframes goPulse{0%,100%{box-shadow:0 0 0 rgba(242,180,65,0)}50%{box-shadow:0 0 18px rgba(242,180,65,.35)}}
+.tagline{color:var(--dim);font-size:11px;letter-spacing:.18em;margin-top:2px;animation:fadeUp 1s .5s ease both}
+.vfoot{position:absolute;left:14px;bottom:8px;font-size:9px;color:rgba(138,143,158,.55);letter-spacing:.14em}
+#pTitle{align-items:center!important}.tcard{height:calc(var(--vhpx,100vh)*.9);max-height:calc(var(--vhpx,100vh)*.9);margin:0 auto}
 #pTitle{background:linear-gradient(100deg,rgba(4,5,11,.88) 38%,rgba(4,5,11,.30) 75%,rgba(4,5,11,.12))}
 #pTitle .card{background:linear-gradient(180deg,rgba(18,20,31,.72),rgba(11,12,20,.55));backdrop-filter:blur(2px);box-shadow:0 0 0 6px rgba(7,8,15,.4),0 0 60px rgba(79,214,196,.10)}
 .slot{background:rgba(11,12,20,.7)}.slot.pick{background:rgba(14,26,28,.75)}
@@ -72,10 +90,10 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
  <div id="ctl"><div id="stick"><div id="knob"></div></div>
   <div class="btns"><button class="ab" id="bA">FIRE</button><button class="ab hot" id="bB">—</button><button class="ab" id="bC">SHIP</button><button class="ab" id="bD">MAP</button></div></div>
 
- <div class="panel on" id="pTitle" style="align-items:stretch;justify-content:flex-start"><div class="card" style="height:92vh;max-height:92vh;padding:10px 16px;width:96vw;max-width:96vw;margin:2vh auto 0;overflow:hidden"><div class="title">
-  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0"><div class="eyebrow">Survey Authority · Vessel FL-7</div><h1>FARLIGHT</h1>
+ <div class="panel on" id="pTitle"><div class="card tcard" style="padding:10px 16px;width:96vw;max-width:96vw;overflow:hidden"><div class="title">
+  <div style="display:flex;flex-direction:column;justify-content:center;min-height:0"><div class="eyebrow">Survey Authority · Vessel FL-7</div><h1>FARLIGHT</h1><div class="tagline">A SURVEY OF THE FAR DARK</div>
   <p class="blurb" style="margin-top:6px">Hearth sits at the centre of a quiet sector. Nobody has come back from the dark with anything but rumours. Fly out, scan, land, dig, trade — the further you go, the stranger and more valuable what you find, and the harder it fights back.</p>
-  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">Continue saved survey</button></div></div>
+  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">Continue saved survey</button></div><div class="vfoot">v33 · BLYTHE CACTUS SOFTWARE</div></div>
   <div style="display:flex;flex-direction:column;min-height:0"><h2 style="margin:0 0 4px">Crew · tap to swap</h2><div class="crew" id="crew" style="overflow-y:auto;min-height:0;flex:1;align-content:start"></div></div>
  </div></div></div>
  <div id="demoCap" style="position:absolute;left:0;right:0;bottom:26px;text-align:center;pointer-events:none;display:none"><div style="display:inline-block;background:rgba(7,8,15,.8);border:1px solid #2b3044;padding:8px 14px;max-width:70vw"><div class="eyebrow" id="demoTitle" style="color:var(--amber)"></div><p id="demoTxt" style="margin-top:3px"></p></div><div class="eyebrow" style="margin-top:6px">Auto-play demo · tap anywhere to stop</div></div>
@@ -97,7 +115,7 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
 <script>
 'use strict';
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
-let W,H,DPR;function resize(){DPR=Math.min(devicePixelRatio||1,2);const vv=window.visualViewport;W=Math.round(vv?vv.width:innerWidth);H=Math.round(vv?vv.height:innerHeight);cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';cx.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();if((navigator.hardwareConcurrency||4)<=4)DPR=1;
+let W,H,DPR;function resize(){DPR=Math.min(devicePixelRatio||1,2);const vv=window.visualViewport;W=Math.round(vv?vv.width:innerWidth);H=Math.round(vv?vv.height:innerHeight);cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';document.documentElement.style.setProperty('--vhpx',H+'px');cx.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();if((navigator.hardwareConcurrency||4)<=4)DPR=1;
 const $=id=>document.getElementById(id);
 function tabs(card){card.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{card.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));card.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id===b.dataset.t))})}
 function show(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));if(id)$(id).classList.add('on');$('ctl').classList.toggle('on',!id&&!demoOn)}
@@ -946,15 +964,22 @@ cv.addEventListener('pointerdown',e=>{if(demoOn){stopDemo();return}if(G.mode==='
 // ---------- title scene & transitions ----------
 let TSTATE={ship:{x:-100,y:200},t0:Math.random()*99};
 function drawTitle(){const t=G.t+TSTATE.t0;cx.fillStyle='#04050b';cx.fillRect(0,0,W,H);
- cx.drawImage(neb(2),W*.45-80,-120,620,620);cx.drawImage(neb(5),W*.05,H*.4,520,520);
+ // aurora band sweep
+ {cx.save();cx.globalCompositeOperation='lighter';const ay=H*.34+Math.sin(t*.15)*30;const ag2=cx.createLinearGradient(0,ay-90,0,ay+90);ag2.addColorStop(0,'transparent');ag2.addColorStop(.5,`hsla(${160+Math.sin(t*.2)*40},70%,50%,.05)`);ag2.addColorStop(1,'transparent');cx.fillStyle=ag2;cx.fillRect(0,ay-90,W,180);cx.restore()}
+ cx.drawImage(neb(2),W*.45-80+Math.sin(t*.05)*14,-120,620,620);cx.drawImage(neb(5),W*.05-Math.sin(t*.04)*10,H*.4,520,520);
  for(let i=0;i<130;i++){const hh=hash(i,1,12);const x=(hash(i,2,12)*W*1.2+t*3*(1+hh))%(W*1.2)-W*.1,y=hash(i,3,12)*H;const tw=.5+Math.sin(t*2+i)*.5;cx.globalAlpha=.25+hh*.6*tw;cx.fillStyle=hh<.2?'#ffd9b0':hh<.4?'#b8c8ff':'#e8ecf8';cx.fillRect(x,y,hh>.92?2:1,hh>.92?2:1)}cx.globalAlpha=1;
  // big planet lower right
  const px=W*.94,py=H*.82,pr=H*.62;let tb={id:'title',seed:42,hue:168,bio:'Crystal',atm:'Thin'};try{const o=JSON.parse(localStorage.getItem('farlight'));if(o&&o.visited){const ids=Object.keys(o.visited);if(ids.length){const h2=k=>hash(7,ids.length,k);const bios=['Rock','Desert','Ice','Ocean','Jungle','Volcanic','Fungal','Crystal'];tb={id:'title_'+ids.length,seed:ids.length*13+7,hue:h2(1)*360,bio:bios[ids.length%8],atm:'Thin'}}}}catch(e){}const p=tb;
  const ag=cx.createRadialGradient(px,py,pr*.92,px,py,pr*1.28);ag.addColorStop(0,'hsla(168,70%,70%,.4)');ag.addColorStop(1,'transparent');cx.fillStyle=ag;cx.beginPath();cx.arc(px,py,pr*1.28,0,6.28);cx.fill();
- cx.save();cx.beginPath();cx.arc(px,py,pr,0,6.28);cx.clip();cx.save();cx.translate(px,py);cx.rotate(t*.008);cx.drawImage(planetTex(p),-pr*1.06,-pr*1.06,pr*2.12,pr*2.12);cx.restore();
+ cx.save();cx.beginPath();cx.arc(px,py,pr,0,6.28);cx.clip();cx.save();cx.translate(px,py);cx.rotate(t*.008);cx.drawImage(planetTex(p),-pr*1.06,-pr*1.06,pr*2.12,pr*2.12);cx.restore();cx.restore();
+ // orbiting moon (behind/in front by phase)
+ {const ma=t*.22;const mx2=px+Math.cos(ma)*pr*1.35,my2=py-pr*.28+Math.sin(ma)*pr*.32;const front=Math.sin(ma)>0;const drawMoon=()=>{const mg=cx.createRadialGradient(mx2-4,my2-4,1,mx2,my2,13);mg.addColorStop(0,'#d8d2c2');mg.addColorStop(.6,'#8f8a7a');mg.addColorStop(1,'#3a3730');cx.fillStyle=mg;cx.beginPath();cx.arc(mx2,my2,13,0,6.28);cx.fill();cx.fillStyle='rgba(0,0,0,.25)';cx.beginPath();cx.arc(mx2+4,my2+2,3,0,6.28);cx.arc(mx2-5,my2-4,2,0,6.28);cx.fill()};if(front)drawMoon()}
+ cx.save();cx.beginPath();cx.arc(px,py,pr,0,6.28);cx.clip();
  const sg=cx.createRadialGradient(px-pr*.5,py-pr*.6,pr*.1,px,py,pr*1.05);sg.addColorStop(0,'rgba(255,255,240,.25)');sg.addColorStop(.5,'rgba(0,0,0,0)');sg.addColorStop(.85,'rgba(0,0,10,.7)');sg.addColorStop(1,'rgba(0,0,10,.92)');cx.fillStyle=sg;cx.fillRect(px-pr,py-pr,pr*2,pr*2);cx.restore();
  // drifting survey ship with trail
  const sx=((t*26)%(W+300))-150,sy=H*.12+Math.sin(t*.6)*14;for(let i=0;i<12;i++){cx.globalAlpha=(1-i/12)*.5;cx.fillStyle='#f2b441';cx.fillRect(sx-14-i*7,sy+Math.sin((t-i*.05)*.6)*2,3,2)}cx.globalAlpha=1;drawShip(sx,sy,.06,1.1);
+ // comet with tail
+ {const ct2=(t*.09)%1.6;if(ct2<1){const cxp=W*1.05-ct2*W*1.2,cyp=H*.08+ct2*H*.22;cx.globalCompositeOperation='lighter';for(let i=0;i<16;i++){cx.globalAlpha=(1-i/16)*.35;cx.fillStyle=i<4?'#dff2ff':'#8fb8e8';cx.beginPath();cx.arc(cxp+i*9,cyp-i*2.2,3.5-i*.18,0,6.28);cx.fill()}cx.globalAlpha=1;cx.globalCompositeOperation='source-over'}}
  // occasional shooting star
  const ss=(t*.31)%7;if(ss<.5){const k=Math.floor(t*.31/7);const x0=hash(k,1,9)*W,y0=hash(k,2,9)*H*.4;cx.strokeStyle=`rgba(255,255,255,${.8*(1-ss*2)})`;cx.lineWidth=1.5;cx.beginPath();cx.moveTo(x0+ss*260,y0+ss*120);cx.lineTo(x0+ss*260-40,y0+ss*120-18);cx.stroke()}
  vignette()}
