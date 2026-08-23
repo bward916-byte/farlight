@@ -227,7 +227,7 @@ function nearSystems(){const out=[];const ci=Math.floor(G.ship.x/CELL),cj=Math.f
 // ---------- space ----------
 function threat(){const d=Math.hypot(G.ship.x,G.ship.y);if(G.sold===0&&d<2200)return 0;return clamp((d-900)/4500,0,1)+(G.sold>0?.1:0)+(G.inDust?.3:0)}
 function updSpace(dt){const s=G.ship;let ax=axis();if(G.route&&!ax.x&&!ax.y){const dd=dist(G.route,s);if(dd<140){G.route=null;msg('Arrived. Autopilot off.')}else{const want=Math.atan2(G.route.y-s.y,G.route.x-s.x);const sp=Math.hypot(s.vx,s.vy);const brake=dd<sp*1.8;const dir=brake?Math.atan2(-s.vy,-s.vx):want;ax={x:Math.cos(dir)*(brake?.8:1),y:Math.sin(dir)*(brake?.8:1)}}}
- if((ax.x||ax.y)&&G.fuel>0){const want=Math.atan2(ax.y,ax.x);let da=((want-s.a+Math.PI*3)%(Math.PI*2))-Math.PI;s.a+=clamp(da,-4*dt,4*dt);
+ if((ax.x||ax.y)&&G.fuel>0){const want=Math.atan2(ax.y,ax.x);let da=((want-s.a+Math.PI*3)%(Math.PI*2))-Math.PI;const _dA=clamp(da,-4*dt,4*dt);s.a+=_dA;s.av=_dA/Math.max(dt,.001);
   const pl=1+skillLv('piloting')*.04;const th=Math.hypot(ax.x,ax.y)*260*G.spd*pl;s.vx+=Math.cos(s.a)*th*dt;s.vy+=Math.sin(s.a)*th*dt;G.fuel=Math.max(0,G.fuel-dt*.8*G.burn/pl);
   for(let i=0;i<(G.fx.length>PCAP?1:2);i++)G.fx.push({x:s.x-Math.cos(s.a)*12,y:s.y-Math.sin(s.a)*12,vx:-Math.cos(s.a)*90+R(-25,25)+s.vx*.5,vy:-Math.sin(s.a)*90+R(-25,25)+s.vy*.5,l:.5,c:i?'#f2b441':'#fff0c0',r:2.5})}
  G.burst=Math.max(0,G.burst-dt);const sp=Math.hypot(s.vx,s.vy),max=320*G.spd*(1+skillLv('piloting')*.04)*(G.addons.warpcoil?1.35:1)*(G.burst>0?2:1);if(sp>max){s.vx*=max/sp;s.vy*=max/sp}s.vx*=.995;s.vy*=.995;s.x+=s.vx*dt;s.y+=s.vy*dt;
@@ -667,26 +667,50 @@ const nebCache={};function neb(i){if(nebCache[i])return nebCache[i];const c=offc
 function colA(c,a){if(c[0]==='#'){return c+Math.round(a*255).toString(16).padStart(2,'0')}const m=c.match(/hsla?\(([^)]*)\)/);return m?`hsla(${m[1]},${a})`:c}
 let shake=0;function shakeIt(n){shake=Math.max(shake,n)}
 function vignette(){const g=cx.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,H*1.1);g.addColorStop(0,'transparent');g.addColorStop(1,'rgba(0,0,0,.55)');cx.fillStyle=g;cx.fillRect(0,0,W,H)}
-let SHIPTEX=null;function shipTex(){if(SHIPTEX)return SHIPTEX;const c=offc(120,120),g=c.getContext('2d');g.translate(60,60);g.scale(2.4,2.4);
- // wings
- const wg=g.createLinearGradient(0,-16,0,16);wg.addColorStop(0,'#a8a294');wg.addColorStop(.5,'#6f6a5c');wg.addColorStop(1,'#4a463c');
- g.fillStyle=wg;g.beginPath();g.moveTo(-4,-3);g.lineTo(-18,-15);g.lineTo(-10,-15);g.lineTo(4,-5);g.closePath();g.fill();g.beginPath();g.moveTo(-4,3);g.lineTo(-18,15);g.lineTo(-10,15);g.lineTo(4,5);g.closePath();g.fill();
- g.fillStyle='#e86b8a';g.fillRect(-17,-15,4,2);g.fillRect(-17,13,4,2);
- // hull
- const hg=g.createLinearGradient(0,-8,0,8);hg.addColorStop(0,'#fbf6e6');hg.addColorStop(.45,'#ddd5bf');hg.addColorStop(.55,'#c9c1aa');hg.addColorStop(1,'#7f7a6a');g.fillStyle=hg;g.beginPath();g.moveTo(21,0);g.quadraticCurveTo(14,-7,4,-7.5);g.lineTo(-12,-6);g.quadraticCurveTo(-15,0,-12,6);g.lineTo(4,7.5);g.quadraticCurveTo(14,7,21,0);g.fill();
- // panel lines + stripe + decal
- g.strokeStyle='rgba(40,35,20,.35)';g.lineWidth=.6;g.beginPath();g.moveTo(-6,-6);g.lineTo(-6,6);g.moveTo(1,-7);g.lineTo(1,7);g.moveTo(12,-5);g.lineTo(12,5);g.stroke();
- g.fillStyle='#f2b441';g.fillRect(-12,-2,7,4);g.fillStyle='#b48cf2';g.fillRect(-2,-6.5,2,13);
- g.fillStyle='#3a3630';g.font='4px monospace';g.fillText('FL-7',5,6.5);
- // cockpit
- const cg=g.createLinearGradient(6,-3,12,3);cg.addColorStop(0,'#bfffef');cg.addColorStop(.5,'#4fd6c4');cg.addColorStop(1,'#1a6a60');g.fillStyle=cg;g.beginPath();g.ellipse(10,0,4.5,2.8,0,0,6.28);g.fill();g.fillStyle='rgba(255,255,255,.85)';g.beginPath();g.ellipse(9,-1,1.6,.7,-.4,0,6.28);g.fill();
- // engine housings
- g.fillStyle='#4a463c';g.fillRect(-16,-4.5,4,3);g.fillRect(-16,1.5,4,3);g.strokeStyle='#2a2620';g.strokeRect(-16,-4.5,4,3);g.strokeRect(-16,1.5,4,3);
+let SHIPTEX=null;function shipTex(){if(SHIPTEX)return SHIPTEX;const c=offc(160,160),g=c.getContext('2d');g.translate(80,80);g.scale(3.1,3.1);
+ // under-shadow keel
+ g.fillStyle='rgba(0,0,0,.25)';g.beginPath();g.ellipse(0,3,18,7,0,0,6.28);g.fill();
+ // wings with leading-edge highlight
+ const wg=g.createLinearGradient(0,-16,0,16);wg.addColorStop(0,'#b3ac9c');wg.addColorStop(.5,'#6f6a5c');wg.addColorStop(1,'#3e3a32');
+ for(const sd of [-1,1]){g.fillStyle=wg;g.beginPath();g.moveTo(-3,4*sd);g.lineTo(-19,15.5*sd);g.lineTo(-9.5,15.5*sd);g.lineTo(5,5*sd);g.closePath();g.fill();
+  g.strokeStyle='rgba(255,255,240,.35)';g.lineWidth=.6;g.beginPath();g.moveTo(-3,4.4*sd);g.lineTo(-18,15*sd);g.stroke();
+  g.fillStyle='#e86b8a';g.fillRect(-18,sd<0?-15.5:13.5,4,2);
+  // wing greebles
+  g.fillStyle='rgba(0,0,0,.25)';g.fillRect(-13,sd<0?-12:9.6,5,2.4);g.fillRect(-8,sd<0?-9:6.6,3.4,2.4);
+  // RCS nub
+  g.fillStyle='#4a463c';g.fillRect(-16.5,sd<0?-14.5:12.9,2,1.6)}
+ // fuselage
+ const hg=g.createLinearGradient(0,-8,0,8);hg.addColorStop(0,'#fdf9ec');hg.addColorStop(.32,'#e5ddc7');hg.addColorStop(.5,'#d2c9b1');hg.addColorStop(.68,'#b0a78e');hg.addColorStop(1,'#6e6858');
+ g.fillStyle=hg;g.beginPath();g.moveTo(22,0);g.quadraticCurveTo(15,-7.5,4,-8);g.lineTo(-12,-6.4);g.quadraticCurveTo(-15.5,0,-12,6.4);g.lineTo(4,8);g.quadraticCurveTo(15,7.5,22,0);g.fill();
+ // spec ridge highlight
+ g.strokeStyle='rgba(255,255,250,.7)';g.lineWidth=.8;g.beginPath();g.moveTo(18,-2.4);g.quadraticCurveTo(6,-6.2,-9,-5);g.stroke();
+ // plating rows + rivets
+ g.strokeStyle='rgba(40,35,20,.3)';g.lineWidth=.55;g.beginPath();for(const px2 of [-8,-3,2,8,13]){g.moveTo(px2,-7+Math.abs(px2)*.12);g.lineTo(px2,7-Math.abs(px2)*.12)}g.moveTo(-12,-2);g.lineTo(20,-2);g.moveTo(-12,2.4);g.lineTo(20,2.4);g.stroke();
+ g.fillStyle='rgba(40,35,20,.35)';for(const px2 of [-10,-5,0,5,10,15])for(const py2 of [-5.6,5.6])g.fillRect(px2,py2,.7,.7);
+ // intake vents
+ g.fillStyle='#3e3a32';for(const sd of [-1,1]){g.beginPath();g.moveTo(-6,6.8*sd);g.lineTo(-2,7.6*sd);g.lineTo(-2,5.6*sd);g.lineTo(-6,5*sd);g.fill();g.fillStyle='rgba(255,255,255,.15)';g.fillRect(-5.5,sd<0?-6.6:5.6,3,.5);g.fillStyle='#3e3a32'}
+ // registration stripe + decal + dorsal band
+ g.fillStyle='#f2b441';g.fillRect(-12,-1.6,7,3.2);g.fillStyle='#c78f2c';g.fillRect(-12,.9,7,.7);
+ g.fillStyle='#b48cf2';g.fillRect(-1.6,-7.4,2.4,14.8);g.fillStyle='rgba(255,255,255,.25)';g.fillRect(-1.6,-7.4,2.4,1);
+ g.fillStyle='#3a3630';g.font='4px monospace';g.fillText('FL-7',6,7);
+ // antenna
+ g.strokeStyle='#d9d2bd';g.lineWidth=.6;g.beginPath();g.moveTo(2,-8);g.lineTo(4,-11.5);g.stroke();g.fillStyle='#e86b8a';g.fillRect(3.6,-12.2,1,1);
+ // canopy: frame, glass, inner seat hint
+ g.fillStyle='#2a2e3a';g.beginPath();g.ellipse(10.5,0,5.4,3.4,0,0,6.28);g.fill();
+ const cg=g.createLinearGradient(6,-3,14,3);cg.addColorStop(0,'#d8fff2');cg.addColorStop(.45,'#4fd6c4');cg.addColorStop(1,'#155a52');
+ g.fillStyle=cg;g.beginPath();g.ellipse(10.5,0,4.6,2.7,0,0,6.28);g.fill();
+ g.fillStyle='rgba(10,20,25,.55)';g.beginPath();g.ellipse(9,0,1.6,1.9,0,0,6.28);g.fill();
+ g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.ellipse(9.2,-1.2,1.7,.7,-.4,0,6.28);g.fill();
+ g.strokeStyle='rgba(20,30,35,.6)';g.lineWidth=.5;g.beginPath();g.moveTo(10.5,-2.7);g.lineTo(10.5,2.7);g.stroke();
+ // engine housings with nozzles
+ for(const ey of [-4.6,1.4]){g.fillStyle='#4a463c';g.fillRect(-17,ey,5,3.2);g.strokeStyle='#241f18';g.lineWidth=.5;g.strokeRect(-17,ey,5,3.2);g.fillStyle='#241f18';g.fillRect(-18,ey+.5,1.4,2.2);const ng2=g.createRadialGradient(-17.4,ey+1.6,0,-17.4,ey+1.6,1.6);ng2.addColorStop(0,'#ffd88a');ng2.addColorStop(1,'#6a4a1a');g.fillStyle=ng2;g.fillRect(-18,ey+.7,1,1.8)}
  return SHIPTEX=c}
-function drawShip(x,y,a,scale=1){const hglow=G.heat/100;
+function drawShip(x,y,a,scale=1){const hglow=G.heat/100;const glint=((G.t*.4)%3);
  cx.save();cx.translate(x,y);cx.rotate(a);cx.scale(scale,scale);
  cx.fillStyle='rgba(0,0,0,.35)';cx.beginPath();cx.ellipse(2,4,18,9,0,0,6.28);cx.fill();
  cx.drawImage(shipTex(),-25,-25,50,50);
+ if(glint<.5){const gp=glint/.5;cx.save();cx.beginPath();cx.ellipse(10.5,0,4.6,2.7,0,0,6.28);cx.clip();cx.globalCompositeOperation='lighter';cx.fillStyle='rgba(255,255,255,.55)';cx.save();cx.translate(6+gp*9,0);cx.rotate(-.5);cx.fillRect(-1,-4,1.6,8);cx.restore();cx.restore();cx.globalCompositeOperation='source-over'}
+ {const av=Math.abs((G.ship&&G.ship.av)||0);if(av>1.2&&Math.random()<.45){const sd2=Math.sign(G.ship.av);cx.fillStyle='rgba(230,235,245,.7)';cx.fillRect(-15,sd2*13,2.5,1.2);G.fx.push({x:x+R(-2,2)-Math.cos(a)*14,y:y+R(-2,2)+Math.sin(a)*sd2*12,vx:R(-8,8),vy:R(-8,8),l:.22,c:'#dfe6f2',r:1.3})}}
  const dmgF=1-G.hull/G.maxHull;if(dmgF>.5){cx.fillStyle='rgba(20,12,8,.55)';for(let i=0;i<Math.floor((dmgF-.5)*10)+2;i++){const dh=hash(i,3,44);cx.beginPath();cx.ellipse(-10+dh*24,(hash(i,4,44)-.5)*12,2+dh*3,1.5+dh*2,dh*3,0,6.28);cx.fill()}}
  if(dmgF>.7&&Math.random()<.25){G.fx.push({x:x+R(-10,10),y:y+R(-6,6),vx:R(-30,30),vy:R(-30,30),l:.3,c:'#ffd080',r:1.5})}if(G.mode==='space'&&dmgF>.5&&Math.random()<.3){G.fx.push({x:x+R(-8,8),y:y+R(-6,6),vx:-G.ship.vx*.2+R(-12,12),vy:-G.ship.vy*.2+R(-12,12),l:R(.6,1.2),c:dmgF>.75?'#ff8a50':'#555b6e',r:R(2,4)})}
  // blinking nav lights
@@ -724,18 +748,64 @@ function drawLifeCtx(cx,l,x,y,sc){const L=l.l||l;const c1=`hsl(${L.hue},65%,55%)
  case 'crystal':{cx.fillStyle=c1;for(let i=-1;i<=1;i++){cx.beginPath();cx.moveTo(i*6,6);cx.lineTo(i*6-4,0);cx.lineTo(i*6+Math.sin(ph+i)*2,-12-Math.abs(i)*-4);cx.lineTo(i*6+4,0);cx.fill()}cx.fillStyle='rgba(255,255,255,.6)';cx.fillRect(-1,-8,1,8);break}
  case 'shade':{cx.globalAlpha=.55+Math.sin(t*3+ph)*.2;cx.fillStyle='#05040a';cx.beginPath();cx.ellipse(0,-2,7,11,Math.sin(t)*.3,0,6.28);cx.fill();cx.fillStyle=c2;cx.globalAlpha=1;for(let i=0;i<3;i++){cx.fillRect(-4+i*3+Math.sin(t*5+i)*2,-6+i*2,2,2)}break}}
  cx.restore()}
-const ETEX={};function enemyTex(kind){if(ETEX[kind])return ETEX[kind];const c=offc(120,120),g=c.getContext('2d');g.translate(60,60);g.scale(2.2,2.2);
- if(kind==='raider'){const bg=g.createLinearGradient(0,-10,0,10);bg.addColorStop(0,'#6a2a30');bg.addColorStop(.5,'#3a161c');bg.addColorStop(1,'#1a0a0e');g.fillStyle=bg;g.beginPath();g.moveTo(15,0);g.lineTo(-2,9);g.lineTo(-10,10);g.lineTo(-6,0);g.lineTo(-10,-10);g.lineTo(-2,-9);g.closePath();g.fill();g.strokeStyle='#e86b8a';g.lineWidth=1;g.stroke();g.fillStyle='#e86b8a';g.fillRect(2,-2,4,4);g.strokeStyle='rgba(255,255,255,.15)';g.beginPath();g.moveTo(-2,-8);g.lineTo(-2,8);g.stroke();g.fillStyle='#8a3a44';g.fillRect(-9,-9,3,4);g.fillRect(-9,5,3,4)}
- else if(kind==='gunship'){const bg=g.createLinearGradient(0,-14,0,14);bg.addColorStop(0,'#7a4a1c');bg.addColorStop(.5,'#4a2c10');bg.addColorStop(1,'#241606');g.fillStyle=bg;g.beginPath();g.moveTo(21,0);g.lineTo(3,13);g.lineTo(-14,11);g.lineTo(-10,0);g.lineTo(-14,-11);g.lineTo(3,-13);g.closePath();g.fill();g.strokeStyle='#ff9a3c';g.lineWidth=1.2;g.stroke();g.fillStyle='#2a1a08';g.fillRect(-2,-13,8,5);g.fillRect(-2,8,8,5);g.fillStyle='#ff9a3c';g.fillRect(4,-12,3,3);g.fillRect(4,9,3,3);g.fillStyle='#ffd9a0';g.beginPath();g.ellipse(11,0,4,2.6,0,0,6.28);g.fill()}
- else if(kind==='veil'){const bg=g.createLinearGradient(0,-8,0,8);bg.addColorStop(0,'#e6d8ff');bg.addColorStop(.5,'#b48cf2');bg.addColorStop(1,'#4a2a7a');g.fillStyle=bg;g.beginPath();g.moveTo(17,0);g.lineTo(0,8);g.lineTo(-17,0);g.lineTo(0,-8);g.closePath();g.fill();g.strokeStyle='#e6d8ff';g.lineWidth=1;g.beginPath();g.moveTo(0,-14);g.lineTo(0,14);g.moveTo(17,0);g.lineTo(-17,0);g.stroke();g.fillStyle='rgba(255,255,255,.9)';g.beginPath();g.arc(4,0,2,0,6.28);g.fill()}
- else if(kind==='flagship'||kind==='dread'){const dr=kind==='dread';const sc2=dr?1.35:1;g.scale(sc2,sc2);const bg=g.createLinearGradient(0,-20,0,20);bg.addColorStop(0,dr?'#5a1420':'#4a1018');bg.addColorStop(.5,'#2a0a10');bg.addColorStop(1,'#12060a');g.fillStyle=bg;g.beginPath();if(dr){g.moveTo(24,0);g.lineTo(14,6);g.lineTo(5,12);g.lineTo(-14,11);g.lineTo(-21,5);g.lineTo(-23,0);g.lineTo(-21,-5);g.lineTo(-14,-11);g.lineTo(5,-12);g.lineTo(14,-6)}else{g.moveTo(20,0);g.lineTo(7,10);g.lineTo(-14,9);g.lineTo(-17,0);g.lineTo(-14,-9);g.lineTo(7,-10)}g.closePath();g.fill();g.strokeStyle=dr?'#ff2a4d':'#ff4d6d';g.lineWidth=1;g.stroke();g.fillStyle=dr?'#ff2a4d':'#ff4d6d';for(let i=-2;i<=2;i++)g.fillRect(-10+i*5,-4,2,8);g.fillStyle='#ffd0d8';g.fillRect(dr?20:16,-1,3,2);g.strokeStyle='rgba(255,255,255,.12)';g.beginPath();g.moveTo(-5,-10);g.lineTo(-5,10);g.moveTo(8,-8);g.lineTo(8,8);g.stroke()}
+const ETEX={};function enemyTex(kind){if(ETEX[kind])return ETEX[kind];const c=offc(160,160),g=c.getContext('2d');g.translate(80,80);g.scale(2.9,2.9);
+ const riv=(pts)=>{g.fillStyle='rgba(0,0,0,.4)';for(const [rx,ry] of pts)g.fillRect(rx,ry,.8,.8)};
+ if(kind==='raider'){
+  // scavenger hull: welded plates, asymmetric
+  const bg=g.createLinearGradient(0,-11,0,11);bg.addColorStop(0,'#8a3a42');bg.addColorStop(.45,'#571f26');bg.addColorStop(1,'#210b0f');
+  g.fillStyle=bg;g.beginPath();g.moveTo(16,0);g.lineTo(4,7);g.lineTo(-3,10);g.lineTo(-11,10.5);g.lineTo(-7,1);g.lineTo(-11,-9.5);g.lineTo(-1,-9);g.lineTo(6,-6);g.closePath();g.fill();
+  g.strokeStyle='#e86b8a';g.lineWidth=.8;g.stroke();
+  // welded patches
+  g.fillStyle='#6e2a32';g.fillRect(-4,-7,5,4);g.fillRect(-9,3,4.5,4);g.strokeStyle='rgba(255,180,190,.35)';g.lineWidth=.5;g.strokeRect(-4,-7,5,4);g.strokeRect(-9,3,4.5,4);
+  riv([[-3.4,-6.4],[0,-6.4],[-3.4,-3.6],[-8.4,3.6],[-5.4,6.2]]);
+  // hull spikes + cockpit slit + gun
+  g.fillStyle='#3a1216';g.beginPath();g.moveTo(1,-9);g.lineTo(3,-13);g.lineTo(5,-8.6);g.fill();g.beginPath();g.moveTo(-6,10);g.lineTo(-4.5,13.6);g.lineTo(-2.5,9.8);g.fill();
+  g.fillStyle='#ffb0bc';g.fillRect(8,-1.4,5,1.1);g.fillStyle='#e86b8a';g.fillRect(10,-2.6,2.4,5.2);
+  g.fillStyle='#1a0a0c';g.fillRect(14,-.8,5,1.6);
+  g.strokeStyle='rgba(255,255,255,.14)';g.lineWidth=.5;g.beginPath();g.moveTo(-2,-8.6);g.lineTo(-2,9.6);g.moveTo(-8,-8.6);g.lineTo(-8,9.8);g.stroke()}
+ else if(kind==='gunship'){
+  const bg=g.createLinearGradient(0,-14,0,14);bg.addColorStop(0,'#9a6226');bg.addColorStop(.45,'#5c3512');bg.addColorStop(1,'#241304');
+  g.fillStyle=bg;g.beginPath();g.moveTo(22,0);g.lineTo(6,11);g.lineTo(-8,13);g.lineTo(-16,10);g.lineTo(-11,0);g.lineTo(-16,-10);g.lineTo(-8,-13);g.lineTo(6,-11);g.closePath();g.fill();
+  g.strokeStyle='#ff9a3c';g.lineWidth=1;g.stroke();
+  // armor slabs
+  g.fillStyle='#71431a';for(const [ax2,ay2,aw2,ah2] of [[-6,-9,8,5],[-6,4,8,5],[3,-6,7,4],[3,2,7,4]]){g.fillRect(ax2,ay2,aw2,ah2);g.strokeStyle='rgba(0,0,0,.4)';g.lineWidth=.5;g.strokeRect(ax2,ay2,aw2,ah2)}
+  riv([[-5,-8],[-1,-8],[-5,7.4],[-1,7.4],[4,-5],[8,-5],[4,4.4],[8,4.4]]);
+  // twin cannon pods with barrels
+  for(const sd of [-1,1]){g.fillStyle='#2a1a08';g.fillRect(-1,sd<0?-14.5:9.5,9,5);g.fillStyle='#0f0902';g.fillRect(7,sd<0?-13.4:10.6,7,1.3);g.fillRect(7,sd<0?-11.2:12.4,7,1.3);g.fillStyle='#ff9a3c';g.fillRect(0,sd<0?-13.2:10.8,1.6,2.6)}
+  // cockpit
+  const cg2=g.createLinearGradient(9,-3,15,3);cg2.addColorStop(0,'#ffe9c2');cg2.addColorStop(1,'#8a5a1a');g.fillStyle=cg2;g.beginPath();g.ellipse(12,0,4.2,2.6,0,0,6.28);g.fill();g.fillStyle='rgba(255,255,255,.7)';g.fillRect(10.5,-1.6,1.8,.8)}
+ else if(kind==='veil'){
+  const bg=g.createLinearGradient(0,-9,0,9);bg.addColorStop(0,'#efe4ff');bg.addColorStop(.5,'#b48cf2');bg.addColorStop(1,'#3d2266');
+  g.fillStyle=bg;g.beginPath();g.moveTo(18,0);g.lineTo(0,9);g.lineTo(-18,0);g.lineTo(0,-9);g.closePath();g.fill();
+  // lattice
+  g.strokeStyle='rgba(240,230,255,.5)';g.lineWidth=.5;g.beginPath();for(let i=-2;i<=2;i++){g.moveTo(-18+ (i+2)*9,i*4.5);g.lineTo(0,-9);g.moveTo(-18+(i+2)*9,i*4.5);g.lineTo(0,9)}g.stroke();
+  g.strokeStyle='#efe4ff';g.lineWidth=.9;g.beginPath();g.moveTo(0,-15);g.lineTo(0,15);g.moveTo(18,0);g.lineTo(-18,0);g.stroke();
+  g.fillStyle='#fff';g.beginPath();g.arc(0,0,2.2,0,6.28);g.fill()}
+ else if(kind==='flagship'||kind==='dread'){const dr=kind==='dread';const sc2=dr?1.28:1;g.scale(sc2,sc2);
+  const bg=g.createLinearGradient(0,-22,0,22);bg.addColorStop(0,dr?'#742030':'#5c1622');bg.addColorStop(.45,'#340d16');bg.addColorStop(1,'#120508');
+  g.fillStyle=bg;g.beginPath();if(dr){g.moveTo(25,0);g.lineTo(16,6.5);g.lineTo(6,12.5);g.lineTo(-13,12);g.lineTo(-21,6);g.lineTo(-24,0);g.lineTo(-21,-6);g.lineTo(-13,-12);g.lineTo(6,-12.5);g.lineTo(16,-6.5)}else{g.moveTo(21,0);g.lineTo(8,10.5);g.lineTo(-14,9.5);g.lineTo(-18,0);g.lineTo(-14,-9.5);g.lineTo(8,-10.5)}g.closePath();g.fill();
+  g.strokeStyle=dr?'#ff2a4d':'#ff4d6d';g.lineWidth=.9;g.stroke();
+  // spine + tower bridge
+  g.fillStyle='#4a1420';g.fillRect(-16,-1.6,32,3.2);g.fillStyle='#7a2434';g.fillRect(2,-3.4,6,6.8);g.fillStyle='#ffd0d8';g.fillRect(6.6,-1,1.4,2);
+  // gun rows with muzzle pods
+  g.fillStyle=dr?'#ff2a4d':'#ff4d6d';for(let i=-2;i<=2;i++){for(const sd of [-1,1]){g.fillRect(-11+i*5,sd<0?-6.5:4.5,2,2);g.fillStyle='#1a0508';g.fillRect(-11+i*5,sd<0?-9.5:7.5,2,3);g.fillStyle=dr?'#ff2a4d':'#ff4d6d'}}
+  riv([[-14,-3],[-14,2.2],[-6,-3],[-6,2.2],[2,-4.4],[10,-3],[10,2.2]]);
+  g.strokeStyle='rgba(255,255,255,.1)';g.lineWidth=.5;g.beginPath();g.moveTo(-6,-11.5);g.lineTo(-6,11.5);g.moveTo(10,-8);g.lineTo(10,8);g.stroke();
+  if(dr){g.fillStyle='#2a0a10';for(const sd of [-1,1]){g.beginPath();g.moveTo(-13,12*sd);g.lineTo(-6,16.5*sd);g.lineTo(0,12*sd);g.fill()}}}
  return ETEX[kind]=c}
 function drawEnemy(e,s){cx.save();cx.translate(e.x,e.y);cx.rotate(Math.atan2(s.y-e.y,s.x-e.x));const col=e.kind==='dread'?'#ff2a4d':e.kind==='flagship'?'#ff4d6d':e.kind==='veil'?'#c9b0ff':e.kind==='watcher'?'#8fa0ff':e.kind==='gunship'?'#ff9a3c':'#e86b8a';
  if(e.shield){cx.strokeStyle='rgba(143,160,255,.55)';cx.lineWidth=1.5;cx.beginPath();cx.arc(0,0,e.kind==='dread'?58:e.kind==='flagship'?40:20,0,6.28);cx.stroke();cx.fillStyle='rgba(143,160,255,.08)';cx.fill()}
  const gl=cx.createRadialGradient(-10,0,0,-10,0,10);gl.addColorStop(0,col);gl.addColorStop(1,'transparent');cx.fillStyle=gl;cx.beginPath();cx.arc(-10,0,10,0,6.28);cx.fill();
- if(e.kind==='watcher'){cx.fillStyle='#0d0f18';cx.strokeStyle=col;cx.lineWidth=1.5;cx.beginPath();cx.arc(0,0,11,0,6.28);cx.fill();cx.stroke();cx.fillStyle=col;cx.beginPath();cx.arc(3,0,4,0,6.28);cx.fill();cx.strokeStyle=colA(col,.4);for(let i=0;i<3;i++){cx.beginPath();cx.arc(0,0,14+i*3+Math.sin(G.t*4+i)*1.5,0,6.28);cx.stroke()}}
+ if(e.kind==='watcher'){cx.fillStyle='#0d0f18';cx.strokeStyle=col;cx.lineWidth=1.5;cx.beginPath();cx.arc(0,0,11,0,6.28);cx.fill();cx.stroke();
+  // rotating iris
+  cx.save();cx.rotate(G.t*.8+e.ph);cx.strokeStyle=colA(col,.7);cx.lineWidth=1;for(let i=0;i<6;i++){cx.rotate(1.047);cx.beginPath();cx.moveTo(5,0);cx.lineTo(9.5,0);cx.stroke()}cx.restore();
+  const ig=cx.createRadialGradient(3,0,0,3,0,5);ig.addColorStop(0,'#fff');ig.addColorStop(.5,col);ig.addColorStop(1,'transparent');cx.fillStyle=ig;cx.beginPath();cx.arc(3,0,5,0,6.28);cx.fill();
+  // orbiting shards
+  for(let i=0;i<3;i++){const a2=G.t*1.6+e.ph+i*2.09;const sx2=Math.cos(a2)*17,sy2=Math.sin(a2)*17*.6;cx.save();cx.translate(sx2,sy2);cx.rotate(a2*2);cx.fillStyle=colA(col,.8);cx.beginPath();cx.moveTo(3,0);cx.lineTo(-2,1.6);cx.lineTo(-2,-1.6);cx.fill();cx.restore()}
+  cx.strokeStyle=colA(col,.35);for(let i=0;i<3;i++){cx.beginPath();cx.arc(0,0,14+i*3+Math.sin(G.t*4+i)*1.5,0,6.28);cx.stroke()}}
  else{const sc2=e.kind==='dread'?2.3:e.kind==='flagship'?1.7:1;cx.drawImage(enemyTex(e.kind==='dread'?'dread':e.kind),-27*sc2,-27*sc2,54*sc2,54*sc2);
   // engine glow + blink
+  if(e.kind==='veil'){cx.globalCompositeOperation='lighter';const vp=cx.createRadialGradient(0,0,0,0,0,8+Math.sin(G.t*2+e.ph)*3);vp.addColorStop(0,'rgba(255,255,255,.7)');vp.addColorStop(.5,'rgba(180,140,242,.35)');vp.addColorStop(1,'transparent');cx.fillStyle=vp;cx.beginPath();cx.arc(0,0,11,0,6.28);cx.fill();cx.globalCompositeOperation='source-over'}
   cx.globalCompositeOperation='lighter';const eg2=cx.createRadialGradient(-14*sc2,0,0,-14*sc2,0,6*sc2);eg2.addColorStop(0,colA(col,.6));eg2.addColorStop(1,'transparent');cx.fillStyle=eg2;cx.beginPath();cx.arc(-14*sc2,0,6*sc2,0,6.28);cx.fill();cx.globalCompositeOperation='source-over';
   if(Math.sin(G.t*5+e.ph)>0){cx.fillStyle=col;cx.fillRect(-8*sc2,-11*sc2,2,2);cx.fillRect(-8*sc2,10*sc2,2,2)}}
  cx.restore();
