@@ -15,7 +15,13 @@ html,body{height:100%;background:var(--ink);overflow:hidden;font-family:"Courier
 .panel{position:absolute;inset:0;display:none;align-items:center;justify-content:center;pointer-events:auto;background:rgba(7,8,15,.9)}
 .panel.on{display:flex}
 .card{width:min(94vw,860px);max-height:96vh;overflow:hidden;display:flex;flex-direction:column;border:1px solid #2b3044;background:linear-gradient(180deg,#12141f,#0b0c14);padding:16px 20px;box-shadow:0 0 0 6px #07080f,0 0 40px rgba(79,214,196,.08)}
-h1{font-size:clamp(22px,4.5vw,40px);letter-spacing:.35em;color:var(--amber);font-weight:400}
+h1{font-size:clamp(22px,4.5vw,40px);letter-spacing:.35em;color:var(--amber);font-weight:400;animation:logoGlow 3.5s ease-in-out infinite}
+@keyframes logoGlow{0%,100%{text-shadow:0 0 8px rgba(242,180,65,.25),0 0 30px rgba(242,180,65,.12)}50%{text-shadow:0 0 14px rgba(242,180,65,.6),0 0 46px rgba(242,180,65,.28),0 0 90px rgba(79,214,196,.18)}}
+#pTitle{background:linear-gradient(100deg,rgba(4,5,11,.88) 38%,rgba(4,5,11,.30) 75%,rgba(4,5,11,.12))}
+#pTitle .card{background:linear-gradient(180deg,rgba(18,20,31,.72),rgba(11,12,20,.55));backdrop-filter:blur(2px);box-shadow:0 0 0 6px rgba(7,8,15,.4),0 0 60px rgba(79,214,196,.10)}
+.slot{background:rgba(11,12,20,.7)}.slot.pick{background:rgba(14,26,28,.75)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+#pTitle .card>.title>div{animation:fadeUp .8s ease both}#pTitle .card>.title>div:last-child{animation-delay:.25s}
 h2{font-size:12px;letter-spacing:.3em;color:var(--teal);text-transform:uppercase;margin:12px 0 6px}
 p{font-size:12px;line-height:1.45;color:#bdb8a8}
 .tabs{display:flex;gap:0;margin:8px 0 6px;border-bottom:1px solid #2b3044}.tabs button{margin:0;border:0;border-bottom:2px solid transparent;background:none;padding:6px 12px;font-size:11px;color:var(--dim)}.tabs button.on{color:var(--teal);border-bottom-color:var(--teal)}
@@ -66,7 +72,7 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
  <div id="ctl"><div id="stick"><div id="knob"></div></div>
   <div class="btns"><button class="ab" id="bA">FIRE</button><button class="ab hot" id="bB">—</button><button class="ab" id="bC">SHIP</button><button class="ab" id="bD">MAP</button></div></div>
 
- <div class="panel on" id="pTitle"><div class="card" style="height:96vh;padding:12px 18px"><div class="title">
+ <div class="panel on" id="pTitle" style="align-items:stretch;justify-content:flex-start"><div class="card" style="height:96vh;padding:12px 18px;width:min(88vw,820px);margin:2vh 0 0 2vw"><div class="title">
   <div style="display:flex;flex-direction:column;justify-content:center;min-height:0"><div class="eyebrow">Survey Authority · Vessel FL-7</div><h1>FARLIGHT</h1>
   <p class="blurb" style="margin-top:6px">Hearth sits at the centre of a quiet sector. Nobody has come back from the dark with anything but rumours. Fly out, scan, land, dig, trade — the further you go, the stranger and more valuable what you find, and the harder it fights back.</p>
   <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">Continue saved survey</button></div></div>
@@ -257,7 +263,7 @@ function hit(dm){shakeIt(6);if(G.addons.mirror&&Math.random()<.3){boom(G.ship.x,
 const PCAP=(navigator.hardwareConcurrency||4)<=4?90:220;function boom(x,y,n,c){if(G.fx.length>PCAP)n=Math.min(n,3);if(n>=14)G.fx.push({x,y,vx:0,vy:0,l:.5,c,r:10,ring:1});for(let i=0;i<n;i++){const a=R(0,6.28),v=R(30,180);G.fx.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,l:R(.3,.9),c,r:R(1.5,3.5)})}}
 function tow(){if(demoOn){G.fuel=G.fuelMax;return}const d=Math.hypot(G.ship.x,G.ship.y);const fee=Math.round(200+d/8+(G.tows*150));G.tows++;G.enemies=[];G.ebul=[];G.route=null;G.ship.x=0;G.ship.y=-250;G.ship.vx=G.ship.vy=0;G.cam.x=0;G.cam.y=-250;charge(fee,`Out of fuel — Authority tug towed FL-7 home from ${Math.round(d/10)} ly`);G.fuel=Math.round(G.fuelMax*.3);snd('hail');save()}
 function die(t){if(demoOn){G.hull=G.maxHull;return}if(G.mode==='dead')return;stopHum();G.mode='dead';try{localStorage.removeItem('farlight')}catch(e){}$('deadTxt').textContent=t+` Credits: ${G.credits}. Artifacts: ${G.arts.length}. Kills: ${G.kills}.`;show('pDead')}
-function pressB(){if(G.mode==='space'){if(G.nearPlanet)openOrbit(G.nearPlanet);else if(G.nearSt)openStation()}else if(G.mode==='rover')roverAction();else if(G.mode==='surf')tryExit();else closePanel()}
+function pressB(){if(TR)return;if(G.mode==='space'){if(G.nearPlanet)openOrbit(G.nearPlanet);else if(G.nearSt)openStation()}else if(G.mode==='rover')roverAction();else if(G.mode==='surf')tryExit();else closePanel()}
 function closePanel(){if(G.mode==='end'){G.mode='rover';show(null);return}if(G.mode==='orbit'||G.mode==='station'||G.mode==='map'||G.mode==='hail')G.mode='space';else if(G.mode==='ship')G.mode=G.prev;else return;show(null)}
 
 // ---------- hails ----------
@@ -297,7 +303,7 @@ function openIntercept(e){G.mode='hail';G.intCd=40;snd('hail');const dr=e.kind==
   G.mode='space';show(null)})}
 // ---------- star map ----------
 const mapC=$('mapC');const MAPV={x:0,y:0,z:.08,drag:null,pinch:null,moved:0};
-function openMap(){if(G.mode!=='space')return;G.mode='map';show('pMap');const r=mapC.getBoundingClientRect();const zFit=Math.min(r.width,r.height)/(UNI*2.15);MAPV.x=0;MAPV.y=0;MAPV.z=zFit;MAPV.intro={t:0,z0:zFit,z1:.08,x0:0,y0:0};drawMap()}
+function openMap(){if(TR||G.mode!=='space')return;G.mode='map';show('pMap');const r=mapC.getBoundingClientRect();const zFit=Math.min(r.width,r.height)/(UNI*2.15);MAPV.x=0;MAPV.y=0;MAPV.z=zFit;MAPV.intro={t:0,z0:zFit,z1:.08,x0:0,y0:0};drawMap()}
 const dustStars=[];for(let i=0;i<3000;i++)dustStars.push([hash(i,1,9)*40000-20000,hash(i,2,9)*40000-20000,hash(i,3,9)]);
 function drawMap(){if(G.mode!=='map')return;if(MAPV.intro){const I=MAPV.intro;I.t+=1/60;const ph=I.t<.7?0:clamp((I.t-.7)/1.6,0,1);const e=ph<.5?4*ph*ph*ph:1-Math.pow(-2*ph+2,3)/2;MAPV.z=I.z0*Math.pow(I.z1/I.z0,e);MAPV.x=lerp(I.x0,G.ship.x,e);MAPV.y=lerp(I.y0,G.ship.y,e);if(ph>=1)MAPV.intro=null}
  MAPV.x=clamp(MAPV.x,-UNI,UNI);MAPV.y=clamp(MAPV.y,-UNI,UNI);const r=mapC.getBoundingClientRect();if(mapC.width!==r.width*DPR){mapC.width=r.width*DPR;mapC.height=r.height*DPR}const m=mapC.getContext('2d');m.setTransform(DPR,0,0,DPR,0,0);const w=r.width,h=r.height,z=MAPV.z;
@@ -351,7 +357,7 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
  <div>Anomalies: <b style="color:var(--violet)">${p.art&&!G.arts.includes(p.art)?'structure detected':'none'}</b></div><div>Hazard: <b style="color:${p.hostile?'var(--rose)':'var(--teal)'}">${p.hostile?'hostile fauna':p.tier>4?'extreme':'low'}</b></div></div>
  <p style="margin-top:10px">${known?'Surveyed before. Deposits regenerate slowly.':'Unsurveyed.'} Landing burns ${cost} fuel. ${G.hold>=G.holdMax?'<span style="color:var(--rose)">Holds are full.</span>':''}</p>
  <p style="margin:8px 0 2px"><span class="eyebrow">Landing zone</span></p><div style="display:flex;gap:8px">${[0,1,2].map(z=>`<button data-z="${z}" class="zn ${z===1?'go':''}" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 10px"><canvas class="zc" data-z="${z}" width="70" height="24" style="width:70px;height:24px;border:1px solid #2b3044"></canvas>${['Northern','Equatorial','Southern'][z]}</button>`).join('')}</div><br><button class="go" id="bLand" ${G.fuel<cost?'disabled':''}>Land · ${cost} fuel</button><button onclick="closePanel()">Stay in orbit</button>`;
- let zone=1;c.querySelectorAll('canvas.zc').forEach(cv2=>{const z=+cv2.dataset.z;const g=cv2.getContext('2d');const y0=[0,Math.floor(MH*.36),Math.floor(MH*.66)][z],y1=[Math.floor(MH*.34),Math.floor(MH*.64),MH][z];for(let yy=0;yy<24;yy++)for(let xx=0;xx<70;xx++){const gx=xx/70*MW,gy=y0+(yy/24)*(y1-y0);const v=clamp(fbm(gx/9+p.seed*.37,gy/9+p.seed*.11,4)*1.15-.05,0,1);const w=p.bio==='Ocean'?.5:p.bio==='Jungle'?.3:p.bio==='Ice'?.25:-1;g.fillStyle=v<=w?'#155a8a':palCol(p.bio,v);g.fillRect(xx,yy,1,1)}});show('pOrbit');c.querySelectorAll('.zn').forEach(b=>b.onclick=()=>{zone=+b.dataset.z;c.querySelectorAll('.zn').forEach(x=>x.classList.toggle('go',x===b))});$('bLand').onclick=()=>{G.fuel-=cost;show(null);land(p,zone)}}
+ let zone=1;c.querySelectorAll('canvas.zc').forEach(cv2=>{const z=+cv2.dataset.z;const g=cv2.getContext('2d');const y0=[0,Math.floor(MH*.36),Math.floor(MH*.66)][z],y1=[Math.floor(MH*.34),Math.floor(MH*.64),MH][z];for(let yy=0;yy<24;yy++)for(let xx=0;xx<70;xx++){const gx=xx/70*MW,gy=y0+(yy/24)*(y1-y0);const v=clamp(fbm(gx/9+p.seed*.37,gy/9+p.seed*.11,4)*1.15-.05,0,1);const w=p.bio==='Ocean'?.5:p.bio==='Jungle'?.3:p.bio==='Ice'?.25:-1;g.fillStyle=v<=w?'#155a8a':palCol(p.bio,v);g.fillRect(xx,yy,1,1)}});show('pOrbit');c.querySelectorAll('.zn').forEach(b=>b.onclick=()=>{zone=+b.dataset.z;c.querySelectorAll('.zn').forEach(x=>x.classList.toggle('go',x===b))});$('bLand').onclick=()=>{G.fuel-=cost;show(null);G.mode='trans';startTrans('land',()=>land(p,zone),p)}}
 
 // ---------- station / ship ----------
 function charge(fee,why){if(G.credits>=fee){G.credits-=fee;msg(`${why}: ${fee}¢ paid.`,4)}else{const short=fee-G.credits;G.credits=0;G.debt+=Math.round(short*1.25);msg(`${why}: ${fee}¢. Short ${short}¢ — Authority loan issued at 25% interest. Debt ${G.debt}¢ (half of every sale goes to repayment).`,8);snd('hit')}}
@@ -380,7 +386,7 @@ function openStation(){G.mode='station';save();G.ship.vx=G.ship.vy=0;const c=$('
  c.querySelectorAll('[data-u]').forEach(b=>b.onclick=()=>{const it=SHOP.find(i=>i.id===b.dataset.u);const lv=G.upg[it.id]||0;if(G.credits>=it.p[lv]){G.credits-=it.p[lv];G.upg[it.id]=lv+1;it.f();openStation()}})}
 function drawBest(card){card.querySelectorAll('canvas.bs').forEach(cv2=>{const b=G.best[cv2.dataset.n];if(!b)return;const g2=cv2.getContext('2d');g2.fillStyle='#0b0c14';g2.fillRect(0,0,40,40);try{drawLifeOn(g2,{l:b,ph:1},20,26,1.2)}catch(e){}})}
 function drawLifeOn(g,l,x,y,sc){drawLifeCtx(g,l,x,y,sc)}
-function openShip(){if(!['space','rover','surf'].includes(G.mode))return;G.prev=G.mode;G.mode='ship';const c=$('shipCard');
+function openShip(){if(TR)return;if(!['space','rover','surf'].includes(G.mode))return;G.prev=G.mode;G.mode='ship';const c=$('shipCard');
  c.innerHTML=`<div class="eyebrow">FL-7 · crew: ${Object.values(G.crew).join(', ')}</div>
  <div class="tabs"><button class="on" data-t="p1">Status</button><button data-t="p2">Crew</button><button data-t="p3">Log</button><button data-t="p4">Bestiary</button></div><div class="tab on" id="p1"><div class="grid2" style="margin-top:8px"><div>Hull <b>${Math.round(G.hull)}/${G.maxHull}</b></div><div>Shield <b>${Math.round(G.sh)}/${G.shMax}</b></div><div>Fuel <b>${Math.round(G.fuel)}/${G.fuelMax}</b></div><div>Holds <b>${G.hold}/${G.holdMax} t</b></div><div>Credits <b>${G.credits}¢</b></div><div>Debt <b style="color:${G.debt?'var(--rose)':'inherit'}">${G.debt}¢</b></div><div>Kills <b>${G.kills}</b></div><div>Tows / rovers lost <b>${G.tows} / ${G.roverLost}</b></div></div>
  </div><div class="tab" id="p2"><h2>Crew</h2>${Object.keys(SKILLS).map(k=>{const lv=skillLv(k),nx=(lv+1)**2*20,pv=lv*lv*20,pct=Math.round((G.skill[k]-pv)/(nx-pv)*100);const m=G.crewM&&G.crewM[SKILLS[k].who];return `<div class="row"><span style="display:flex;align-items:center;gap:8px"><canvas class="pt" data-s="${m?m.seed:0}" width="32" height="32" style="width:32px;height:32px;border:1px solid #2b3044"></canvas><span><b style="color:var(--amber)">${SKILLS[k].n} ${lv}</b> · ${G.crew[SKILLS[k].who]}${m?' · '+SPN[m.sp]:''} <span style="color:var(--dim)">— ${SKILLS[k].d}</span></span></span><span style="display:inline-block;width:90px;height:6px;background:#0f1119;border:1px solid #2b3044"><span style="display:block;height:100%;width:${pct}%;background:var(--teal)"></span></span></div>`}).join('')}
@@ -448,11 +454,13 @@ function loseRover(){if(demoOn){P.rover.charge=100;return}const p=P.p;const fee=
 function roverAction(){const n=P.near;if(n){if(n.kind==='min'){const v=Math.round(n.m.v*G.sciB);if(addCargo(n.m.n,v,n.m.m)){n.left--;msg(`${n.m.n} +${v}¢ · holds ${G.hold}/${G.holdMax}t`,2);boom(n.x,n.y,6,'#f2b441');if(n.left<=0)P.dep=P.dep.filter(d=>d!==n)}}
   else if(n.kind==='life'){const v=Math.round(n.l.v*G.lifeB);if(addCargo(n.l.n,v,1)){recordLife(n.l);gainXp('xeno',4+n.l.rar*8);msg(`${RARN[n.l.rar]} ${n.l.n} captured +${v}¢${n.l.note?' — '+n.l.note:''}`,n.l.rar>=2?5:2);if(n.l.rar>=2)snd('lvl');P.life=P.life.filter(l=>l!==n)}}
   else if(n.kind==='site')enterSite(n)}
- else if(P.atL){G.visited[P.p.id]=1;G.mode='space';const p=P.p;G.ship.x=p.x+p.r+80;G.ship.y=p.y;G.ship.vx=G.ship.vy=0;P=null;msg('Back in orbit.')}}
+ else if(P.atL){const p=P.p;G.mode='trans';startTrans('lift',()=>{G.visited[p.id]=1;G.mode='space';G.ship.x=p.x+p.r+80;G.ship.y=p.y;G.ship.vx=G.ship.vy=0;P=null;msg('Back in orbit.')},p)}}
 
 // ---------- site events: side-scroller ----------
 let S=null;
-function enterSite(site){const p=P.p,t=site.type;let k=0;const rnd=()=>hash(p.seed,k++ +site.x|0,33);
+function enterSiteNow(site){enterSiteInner(site)}
+function enterSite(site){if(G.mode==='rover'&&!demoOn){G.mode='trans2';startTrans('iris',()=>enterSiteInner(site));return}enterSiteInner(site)}
+function enterSiteInner(site){const p=P.p,t=site.type;let k=0;const rnd=()=>hash(p.seed,k++ +site.x|0,33);
  const len=t==='cave'?2000:1600,ground=[];for(let x=0;x<=len;x+=40)ground.push(t==='cave'?220+Math.sin(x/180)*30+(rnd()-.5)*30:210+Math.sin(x/260+p.seed)*25+(rnd()-.5)*8);
  const gy=x=>ground[clamp(Math.round(x/40),0,ground.length-1)];const plats=[],items=[],hz=[],props=[];
  if(t==='ruin'){for(let i=0;i<6;i++){const x=250+i*220;plats.push({x,y:gy(x)-70-(i%3)*45,w:110,h:14,stone:true});props.push({x:x+40,y:gy(x+40),k:'pillar',h:70+rnd()*60})}hz.push({x:700,y:gy(700)-8,r:16,k:'spike'});hz.push({x:1150,y:gy(1150)-8,r:16,k:'spike'})}
@@ -486,7 +494,7 @@ function updSurf(dt){const ax=axis();S.vx+=(ax.x*220-S.vx)*dt*8;if(IN.a&&S.on){S
  S.cam+=(S.px-W*.4-S.cam)*dt*6;S.cam=clamp(S.cam,0,S.len-W);
  const can=S.px<60||S.px>S.len-60;G.canExit=can;setBtns('JUMP',can?'EXIT':S.items.length?`${S.items.length} LEFT`:'EXIT',can)}
 function endGame(){G.ended=true;G.mode='end';S=null;const c=$('endTxt');c.innerHTML=`You find the last letter folded into the orrery's heart. It is not addressed to you. It is addressed to whoever came back.<br><br><i>"We sold them the way to Hearth for passage through the dark. We thought the Umbra wanted a place. They wanted a sound. Hearth was the sound. Every colony ship that left was a note they kept. If you are reading this, the song is nearly complete. Come back quietly. Do not let them follow. The dark keeps what it finds."</i><br><br>Credits ${G.credits}¢ · artifacts ${G.arts.length}/8 · kills ${G.kills} · crew skills ${Object.keys(SKILLS).map(k=>skillLv(k)).join('/')}<br>The sector is still out there. So is Hearth.`;show('pEnd');G.log.push({n:'The Last Letter',t:'Recovered from the Vault on Hearth Prime. The crew does not speak on the way back.'});save()}
-function tryExit(){if(!G.canExit){msg('Walk to either edge to leave the site.');return}S.site.done=true;G.mode='rover';S=null;msg('Back at the rover.')}
+function tryExit(){if(!G.canExit){msg('Walk to either edge to leave the site.');return}const st=S.site;G.mode='trans2';startTrans('iris',()=>{st.done=true;G.mode='rover';S=null;msg('Back at the rover.')})}
 
 // ---------- drawing (overhaul) ----------
 const TEX={};function offc(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c}
@@ -712,15 +720,49 @@ $('bDemo').onclick=()=>startDemo();
 let idleT=0;setInterval(()=>{if(G.mode==='title'&&!demoOn){idleT++;if(idleT>=25){idleT=0;startDemo()}}else idleT=0},1000);
 addEventListener('pointerdown',()=>idleT=0,true);addEventListener('keydown',()=>idleT=0,true);
 cv.addEventListener('pointerdown',e=>{if(demoOn){stopDemo();return}if(G.mode==='rover'&&P&&P.mm){const x=e.clientX,y=e.clientY;const m=P.mm;if(x>=m.mx&&x<=m.mx+m.mw&&y>=m.my&&y<=m.my+m.mh){const wx=(x-m.mx)/m.mw*MW*TS,wy=(y-m.my)/m.mh*MH*TS;if(P.wp&&Math.hypot(P.wp.x-wx,P.wp.y-wy)<80){P.wp=null;delete G.wps[P.p.id];msg('Waypoint cleared.',2)}else{P.wp={x:wx,y:wy};G.wps[P.p.id]={x:wx,y:wy};msg('Waypoint set — follow the amber arrow.',3);snd('ping')}}}});document.getElementById('ui').addEventListener('pointerdown',e=>{if(demoOn&&!e.target.closest('#pTitle'))stopDemo()},true);
+// ---------- title scene & transitions ----------
+let TSTATE={ship:{x:-100,y:200},t0:Math.random()*99};
+function drawTitle(){const t=G.t+TSTATE.t0;cx.fillStyle='#04050b';cx.fillRect(0,0,W,H);
+ cx.drawImage(neb(2),W*.45-80,-120,620,620);cx.drawImage(neb(5),W*.05,H*.4,520,520);
+ for(let i=0;i<130;i++){const hh=hash(i,1,12);const x=(hash(i,2,12)*W*1.2+t*3*(1+hh))%(W*1.2)-W*.1,y=hash(i,3,12)*H;const tw=.5+Math.sin(t*2+i)*.5;cx.globalAlpha=.25+hh*.6*tw;cx.fillStyle=hh<.2?'#ffd9b0':hh<.4?'#b8c8ff':'#e8ecf8';cx.fillRect(x,y,hh>.92?2:1,hh>.92?2:1)}cx.globalAlpha=1;
+ // big planet lower right
+ const px=W*.94,py=H*.82,pr=H*.62;const p={id:'title',seed:42,hue:168,bio:'Crystal',atm:'Thin'};
+ const ag=cx.createRadialGradient(px,py,pr*.92,px,py,pr*1.28);ag.addColorStop(0,'hsla(168,70%,70%,.4)');ag.addColorStop(1,'transparent');cx.fillStyle=ag;cx.beginPath();cx.arc(px,py,pr*1.28,0,6.28);cx.fill();
+ cx.save();cx.beginPath();cx.arc(px,py,pr,0,6.28);cx.clip();cx.save();cx.translate(px,py);cx.rotate(t*.008);cx.drawImage(planetTex(p),-pr*1.06,-pr*1.06,pr*2.12,pr*2.12);cx.restore();
+ const sg=cx.createRadialGradient(px-pr*.5,py-pr*.6,pr*.1,px,py,pr*1.05);sg.addColorStop(0,'rgba(255,255,240,.25)');sg.addColorStop(.5,'rgba(0,0,0,0)');sg.addColorStop(.85,'rgba(0,0,10,.7)');sg.addColorStop(1,'rgba(0,0,10,.92)');cx.fillStyle=sg;cx.fillRect(px-pr,py-pr,pr*2,pr*2);cx.restore();
+ // drifting survey ship with trail
+ const sx=((t*26)%(W+300))-150,sy=H*.12+Math.sin(t*.6)*14;for(let i=0;i<12;i++){cx.globalAlpha=(1-i/12)*.5;cx.fillStyle='#f2b441';cx.fillRect(sx-14-i*7,sy+Math.sin((t-i*.05)*.6)*2,3,2)}cx.globalAlpha=1;drawShip(sx,sy,.06,1.1);
+ // occasional shooting star
+ const ss=(t*.31)%7;if(ss<.5){const k=Math.floor(t*.31/7);const x0=hash(k,1,9)*W,y0=hash(k,2,9)*H*.4;cx.strokeStyle=`rgba(255,255,255,${.8*(1-ss*2)})`;cx.lineWidth=1.5;cx.beginPath();cx.moveTo(x0+ss*260,y0+ss*120);cx.lineTo(x0+ss*260-40,y0+ss*120-18);cx.stroke()}
+ vignette()}
+let TR=null;// {kind,t,dur,mid,done,p}
+function startTrans(kind,mid,p){if(TR)return;TR={kind,t:0,dur:kind==='land'?2.4:kind==='lift'?1.8:.7,mid,fired:false,p};snd(kind==='land'||kind==='lift'?'boom':'ping')}
+function drawTrans(dt){TR.t+=dt;const ph=TR.t/TR.dur;if(!TR.fired&&ph>=.5){TR.fired=true;TR.mid&&TR.mid()}
+ if(TR.kind==='land'||TR.kind==='lift'){const p=TR.p;const desc=TR.kind==='land'?ph:1-ph;// 0=space,1=ground
+  cx.fillStyle='#04050b';cx.fillRect(0,0,W,H);
+  for(let i=0;i<80;i++){const hh=hash(i,1,14);cx.globalAlpha=.3+hh*.5;cx.fillStyle='#cfd6ea';const stream=desc*desc*40;cx.fillRect(hash(i,2,14)*W,(hash(i,3,14)*H+G.t*30*hh)%H,1,1+stream*hh)}cx.globalAlpha=1;
+  const pr=lerp(60,H*2.6,desc*desc);const px=W/2,py=H*.5+pr*.4;
+  const ag=cx.createRadialGradient(px,py,pr*.9,px,py,pr*1.3);ag.addColorStop(0,`hsla(${p.hue},70%,70%,.4)`);ag.addColorStop(1,'transparent');cx.fillStyle=ag;cx.beginPath();cx.arc(px,py,pr*1.3,0,6.28);cx.fill();
+  cx.save();cx.beginPath();cx.arc(px,py,pr,0,6.28);cx.clip();cx.translate(px,py);cx.rotate(.2);cx.drawImage(planetTex(p),-pr*1.05,-pr*1.05,pr*2.1,pr*2.1);cx.restore();
+  const shx=R(-1,1)*desc*6,shy=R(-1,1)*desc*6;const sy2=H*.34+Math.sin(G.t*8)*2;
+  cx.save();cx.translate(W/2+shx,sy2+shy);cx.rotate(1.5708);drawShip(0,0,0,1.3);cx.restore();
+  const heat=clamp(desc*1.6-.3,0,1);if(heat>0){cx.globalCompositeOperation='lighter';const fg=cx.createRadialGradient(W/2,sy2+26,2,W/2,sy2+26,60*heat+10);fg.addColorStop(0,'rgba(255,240,180,.95)');fg.addColorStop(.4,'rgba(255,120,40,.7)');fg.addColorStop(1,'transparent');cx.fillStyle=fg;cx.beginPath();cx.ellipse(W/2,sy2+30,26*heat+6,60*heat+12,0,0,6.28);cx.fill();for(let i=0;i<14;i++){cx.fillStyle=`rgba(255,${140+R(0,80)},60,${heat*.6})`;cx.fillRect(W/2+R(-30,30)*heat,sy2+40+R(0,80)*heat,2,R(4,14))}cx.globalCompositeOperation='source-over'}
+  cx.fillStyle='#0f1119';cx.fillRect(0,0,W,H*.08);cx.fillRect(0,H*.92,W,H*.08);
+  cx.fillStyle='#f2b441';cx.font='11px monospace';cx.textAlign='center';cx.letterSpacing='4px';cx.fillText(TR.kind==='land'?`DESCENT — ${p.name.toUpperCase()} · ${p.bio.toUpperCase()}`:`LIFT-OFF — ${p.name.toUpperCase()}`,W/2,H*.05);cx.letterSpacing='0px';
+  shakeIt(desc*4)}
+ else{// iris for sites
+  const r=TR.fired?(ph-.5)*2:1-ph*2;cx.save();cx.beginPath();cx.rect(0,0,W,H);cx.moveTo(W/2+Math.max(1,r)*W,H/2);cx.arc(W/2,H/2,Math.max(0.001,r)*W,0,6.28,true);cx.fillStyle='#04050b';cx.fill('evenodd');cx.restore()}
+ if(TR.t>=TR.dur)TR=null}
 // ---------- loop ----------
 let last=performance.now();function loop(now){const dt=Math.min(.05,(now-last)/1000);last=now;G.t+=dt;
  for(const f of G.fx){f.x+=f.vx*dt;f.y+=f.vy*dt;f.l-=dt}G.fx=G.fx.filter(f=>f.l>0);
  if(msgT>0){msgT-=dt;if(msgT<=0)$('msg').style.opacity=0}humTick();
  if(demoOn)demoTick(dt);
- if(G.mode==='space')updSpace(dt);else if(G.mode==='rover')updRover(dt);else if(G.mode==='surf')updSurf(dt);
+ if(!TR){if(G.mode==='space')updSpace(dt);else if(G.mode==='rover')updRover(dt);else if(G.mode==='surf')updSurf(dt);}
  const vm=G.mode==='ship'?G.prev:G.mode==='map'||G.mode==='hail'?'space':G.mode;
- if(vm==='surf')drawSurf();else if(vm==='rover')drawRover();else drawSpace();
- if(G.mode!=='title')drawHud();if(G.mode==='map'&&(MAPV.intro||(G.t*60|0)%6===0))drawMap();requestAnimationFrame(loop)}
+ if(G.mode==='title'&&!demoOn)drawTitle();else if(TR&&(TR.kind==='land'||TR.kind==='lift')){}else if(vm==='surf'&&S)drawSurf();else if(vm==='rover'&&P)drawRover();else drawSpace();
+ if(TR)drawTrans(dt);
+ if(G.mode!=='title'&&!TR)drawHud();if(G.mode==='map'&&(MAPV.intro||(G.t*60|0)%6===0))drawMap();requestAnimationFrame(loop)}
 requestAnimationFrame(loop);
 </script>
 </body>
