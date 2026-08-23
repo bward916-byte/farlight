@@ -296,7 +296,7 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
  <div>Anomalies: <b style="color:var(--violet)">${p.art&&!G.arts.includes(p.art)?'structure detected':'none'}</b></div><div>Hazard: <b style="color:${p.hostile?'var(--rose)':'var(--teal)'}">${p.hostile?'hostile fauna':p.tier>4?'extreme':'low'}</b></div></div>
  <p style="margin-top:10px">${known?'Surveyed before. Deposits regenerate slowly.':'Unsurveyed.'} Landing burns ${cost} fuel. ${G.hold>=G.holdMax?'<span style="color:var(--rose)">Holds are full.</span>':''}</p>
  <button class="go" id="bLand" ${G.fuel<cost?'disabled':''}>Land · ${cost} fuel</button><button onclick="closePanel()">Stay in orbit</button>`;
- show('pOrbit');$('bLand').onclick=()=>{G.fuel-=cost;land(p)}}
+ show('pOrbit');$('bLand').onclick=()=>{G.fuel-=cost;show(null);land(p)}}
 
 // ---------- station / ship ----------
 function cargoVal(){let v=0;for(const k in G.cargo)v+=G.cargo[k].val;return v}
@@ -350,7 +350,7 @@ function land(p){const seed=p.seed;let k=0;const rnd=()=>hash(seed,k++,77);
  if(p.art&&!G.arts.includes(p.art)&&sites.length)sites[0].hasArt=true;if(p.vault){sites.length=0;sites.push({x:lx*TS+16+200,y:ly*TS+16,kind:'site',type:'vault',done:G.ended})}
  const wx=p.bio==='Ice'?'snow':p.bio==='Desert'||p.bio==='Rock'?'dust':p.bio==='Volcanic'?'ash':p.bio==='Jungle'||p.bio==='Ocean'?'rain':'clear';
  P={p,el,gy,water,passable,rover:{x:lx*TS+16,y:ly*TS+16,a:0,v:0,hp:100*G.rovArm,charge:100},lander:{x:lx*TS+16,y:ly*TS+16},dep,life,fauna,sites,fog:new Uint8Array(MW*MH),tod:rnd(),weather:{type:'clear',base:wx,intensity:0,timer:6+rnd()*10,parts:[]},cam:{x:0,y:0},bolts:[],dayLen:140};
- G.mode='rover';msg(`Touchdown on ${p.name}. Scanner active — drive to reveal deposits.`,5);reveal()}
+ G.mode='rover';show(null);msg(`Touchdown on ${p.name}. Scanner active — drive to reveal deposits.`,5);reveal()}
 function reveal(){const r=P.rover,rad=(G.scanR*(P.weather.type==='storm'?(P.p.bio==='Ice'?.3:.55):1))/TS;const cxi=r.x/TS|0,cyi=r.y/TS|0;const rr=Math.ceil(rad);
  for(let y=cyi-rr;y<=cyi+rr;y++)for(let x=cxi-rr;x<=cxi+rr;x++)if(x>=0&&y>=0&&x<MW&&y<MH&&Math.hypot(x-cxi,y-cyi)<=rad)P.fog[y*MW+x]=1}
 function updWeather(dt){const w=P.weather;w.timer-=dt;if(w.timer<=0){w.timer=12+Math.random()*20;const r=Math.random();w.type=w.base==='clear'?(r<.8?'clear':'storm'):r<.4?'clear':r<.85?w.base:'storm';
