@@ -395,10 +395,10 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
    <div class="grid2" style="font-size:11px;gap:2px 10px"><div>Minerals <b style="color:var(--amber)">${p.min.n}</b> · <b>${p.min2.n}</b></div><div>Life <b>${p.life?p.life.n:'none'}</b></div><div>Anomaly <b style="color:var(--violet)">${p.art&&!G.arts.includes(p.art)?'structure':'—'}</b></div><div>Hazard <b style="color:${p.hostile?'var(--rose)':'var(--teal)'}">${p.hostile?'hostile fauna':p.tier>4?'extreme':'low'}</b></div></div>
    <div style="display:flex;gap:6px"><button id="mScan" style="margin:0;padding:6px 10px;font-size:11px">MINERAL SCAN</button><button id="bScan" style="margin:0;padding:6px 10px;font-size:11px">BIO SCAN</button></div>
    <div id="scanOut" style="min-height:52px;font-size:11px"></div>
-   <div style="display:flex;gap:6px;align-items:center"><span class="eyebrow" style="font-size:9px">ZONE</span>${[0,1,2].map(z=>`<button data-z="${z}" class="zn ${z===1?'go':''}" style="margin:0;padding:5px 10px;font-size:10px">${['NORTH','EQUATOR','SOUTH'][z]}</button>`).join('')}</div>
+   <div id="lzLine" style="font-size:10px;color:var(--dim)">LANDING BEACON · tap the globe to place it</div>
    <div style="display:flex;gap:8px"><button class="go" id="bLand" style="margin:0" ${G.fuel<cost?'disabled':''}>LAND · ${cost} FUEL${G.hold>=G.holdMax?' · HOLDS FULL':''}</button><button style="margin:0" onclick="closePanel()">STAY IN ORBIT</button></div>
   </div></div>`;
- let zone=1;const OV={min:false,bio:false};
+ let zone=1;const BE={sx:0,sy:0};const OV={min:false,bio:false};
  // per-pixel overlay textures in surface space (rotate with the globe)
  const cpts=[];const bandSum=[0,0,0],bandN=[1,1,1];
  const NOV=132;const mOv=offc(NOV,NOV),bOv=offc(NOV,NOV);
@@ -419,11 +419,10 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
   const rot=G.t*.12;
   gc.save();gc.rotate(rot);gc.drawImage(planetTex(p),-R2*1.06,-R2*1.06,R2*2.12,R2*2.12);gc.restore();
   if(p.atm!=='None'&&p.bio!=='Volcanic'){gc.save();gc.globalAlpha=.5;gc.rotate(rot*1.55);gc.drawImage(cloudTex(p),-R2*1.08,-R2*1.08,R2*2.16,R2*2.16);gc.restore();gc.globalAlpha=1}
-  // zone band highlight
-  {const bands=[[-1,-.34],[-.32,.32],[.34,1]][zone];gc.fillStyle='rgba(242,180,65,.10)';gc.fillRect(-R2,bands[0]*R2,R2*2,(bands[1]-bands[0])*R2);gc.strokeStyle='rgba(242,180,65,.5)';gc.setLineDash([4,4]);gc.beginPath();gc.moveTo(-R2,bands[0]*R2);gc.lineTo(R2,bands[0]*R2);gc.moveTo(-R2,bands[1]*R2);gc.lineTo(R2,bands[1]*R2);gc.stroke();gc.setLineDash([])}
   // overlays rotate with surface (pixel maps)
   const dot=(x,y,fn)=>{const ca=Math.cos(rot),sa=Math.sin(rot);const rx=(x*ca-y*sa)*R2,ry=(x*sa+y*ca)*R2;fn(rx,ry)};
 
+  dot(BE.sx,BE.sy,(rx,ry)=>{gc.strokeStyle='rgba(242,180,65,.9)';gc.lineWidth=1.4;gc.beginPath();gc.moveTo(rx-7,ry);gc.lineTo(rx-2,ry);gc.moveTo(rx+2,ry);gc.lineTo(rx+7,ry);gc.moveTo(rx,ry-7);gc.lineTo(rx,ry-2);gc.moveTo(rx,ry+2);gc.lineTo(rx,ry+7);gc.stroke();gc.strokeStyle=`rgba(242,180,65,${.5+Math.sin(G.t*4)*.3})`;gc.beginPath();gc.arc(rx,ry,9+Math.sin(G.t*4)*2,0,6.28);gc.stroke();gc.fillStyle='#f2b441';gc.font='7px monospace';gc.textAlign='center';gc.fillText('LZ',rx,ry-11)});
   for(const [x,y] of cpts)dot(x,y,(rx,ry)=>{if(civ==='active'){if(Math.sin(G.t*4)>0){gc.fillStyle='#4fd6c4';gc.fillRect(rx-2,ry-2,4,4);gc.strokeStyle='rgba(79,214,196,.5)';gc.beginPath();gc.arc(rx,ry,6+Math.sin(G.t*4)*2,0,6.28);gc.stroke()}}else{gc.fillStyle='#b48cf2';gc.save();gc.translate(rx,ry);gc.rotate(.785);gc.strokeStyle='#b48cf2';gc.strokeRect(-2.5,-2.5,5,5);gc.restore();if(p.civVault){gc.strokeStyle=`rgba(180,140,242,${.4+Math.sin(G.t*3)*.35})`;gc.beginPath();gc.arc(rx,ry,7+Math.sin(G.t*3)*2,0,6.28);gc.stroke()}}});
   // terminator + limb + rim
   const sg2=gc.createRadialGradient(-R2*.5,-R2*.3,R2*.1,0,0,R2*1.02);sg2.addColorStop(0,'rgba(255,255,240,.22)');sg2.addColorStop(.5,'rgba(0,0,0,0)');sg2.addColorStop(.85,'rgba(0,0,10,.55)');sg2.addColorStop(1,'rgba(0,0,10,.85)');gc.fillStyle=sg2;gc.fillRect(-R2,-R2,R2*2,R2*2);
@@ -439,12 +438,14 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
  window.ORBIV=setInterval(()=>{if(G.mode!=='orbit'||!document.body.contains($('globeC'))){clearInterval(window.ORBIV);window.ORBIV=null;return}drawGlobe()},50);
  drawGlobe();
  const bandAvg=z=>clamp((bandSum[z]/bandN[z]-.12)*3.6,0,1);
+ const beaconDens=()=>{let t2=0,n2=0;for(let i=0;i<24;i++){const a2=i/24*6.28;const x=BE.sx+Math.cos(a2)*.1,y=BE.sy+Math.sin(a2)*.1;if(x*x+y*y>1)continue;t2+=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);n2++}return n2?clamp(((t2/n2)-.12)*3.6,0,1):0};
+ const updLZ=()=>{const d2=beaconDens();const el2=$('lzLine');if(el2)el2.innerHTML=`LANDING BEACON · local ore density <span style="display:inline-block;width:60px;height:5px;background:#0f1119;border:1px solid #2b3044;vertical-align:middle"><span style="display:block;height:100%;width:${Math.round(d2*100)}%;background:var(--amber)"></span></span> <b style="color:var(--amber)">${Math.round(d2*100)}%</b> · tap the globe to move it`};updLZ();
  $('mScan').onclick=()=>{OV.min=!OV.min;OV.mt=G.t;const out=$('scanOut');if(!OV.min){out.innerHTML='';return}
   out.innerHTML=`<div class="eyebrow" style="font-size:9px">MINERAL DENSITY · ORE GLOW ON GLOBE</div>${[0,1,2].map(z=>{const v=clamp(bandAvg(z),0,1);return `<div style="display:flex;align-items:center;gap:6px"><span style="width:52px;color:var(--dim);font-size:10px">${['NORTH','EQUATOR','SOUTH'][z]}</span><div style="flex:1;height:5px;background:#0f1119;border:1px solid #2b3044"><div style="height:100%;width:${Math.round(v*100)}%;background:var(--amber)"></div></div></div>`}).join('')}<div style="color:var(--dim);font-size:10px">${p.min.n} ${p.min.v}¢/t · ${p.min2.n} ${p.min2.v}¢/t${sci>=2?` · est. ${11+p.tier} deposits`:''}</div>`;snd('ping');gainXp('science',3)};
  $('bScan').onclick=()=>{OV.bio=!OV.bio;OV.bt=G.t;const out=$('scanOut');if(!OV.bio){out.innerHTML='';return}
   const rows=[p.life,p.life2].filter(Boolean).map(L=>`<div style="display:flex;justify-content:space-between"><span><b style="color:${L.rar===3?'var(--amber)':L.rar>=2?'var(--violet)':'var(--bone)'}">${L.n}</b> <span style="color:var(--dim)">· ${L.form}${sci>=1?` · ${RARN[L.rar]}`:''}</span></span><b>${sci>=1?'~'+Math.round(L.v*G.lifeB)+'¢':'?'}</b></div>`).join('');
   out.innerHTML=`<div class="eyebrow" style="font-size:9px">BIOSPHERE · PIXELS TINTED BY RARITY</div>${rows||'<span style="color:var(--dim)">No macroscopic life.</span>'}${G.best[p.life&&p.life.n]?'<div style="color:var(--teal);font-size:10px">Already catalogued.</div>':''}`;snd('ping');gainXp('xeno',3)};
- show('pOrbit');c.querySelectorAll('.zn').forEach(b=>b.onclick=()=>{zone=+b.dataset.z;c.querySelectorAll('.zn').forEach(x=>x.classList.toggle('go',x===b))});$('bLand').onclick=()=>{G.fuel-=cost;show(null);if(p.bio==='Volcanic'&&G.hull<G.maxHull*.4){G.hull=Math.max(5,G.hull-12);msg('Volcanic re-entry scorches the weakened hull. −12 hull.',4)}G.mode='trans';startTrans('land',()=>land(p,zone),p)}}
+ show('pOrbit');{const gcv=$('globeC');gcv.style.touchAction='none';gcv.addEventListener('pointerdown',e=>{const r3=gcv.getBoundingClientRect();const px=(e.clientX-r3.left)*(220/r3.width),py=(e.clientY-r3.top)*(220/r3.height);const x=(px-110)/100,y=(py-110)/100;if(x*x+y*y>1)return;const rot=G.t*.12;const ca=Math.cos(-rot),sa=Math.sin(-rot);BE.sx=x*ca-y*sa;BE.sy=x*sa+y*ca;updLZ();snd('ping')})}$('bLand').onclick=()=>{G.fuel-=cost;p._lz={sx:BE.sx,sy:BE.sy};show(null);if(p.bio==='Volcanic'&&G.hull<G.maxHull*.4){G.hull=Math.max(5,G.hull-12);msg('Volcanic re-entry scorches the weakened hull. −12 hull.',4)}G.mode='trans';startTrans('land',()=>land(p,zone),p)}}
 
 // ---------- station / ship ----------
 function charge(fee,why){if(G.credits>=fee){G.credits-=fee;msg(`${why}: ${fee}¢ paid.`,4)}else{const short=fee-G.credits;G.credits=0;G.debt+=Math.round(short*1.25);msg(`${why}: ${fee}¢. Short ${short}¢ — Authority loan issued at 25% interest. Debt ${G.debt}¢ (half of every sale goes to repayment).`,8);snd('hit')}}
@@ -560,7 +561,7 @@ let P=null;const TS=32,MW=70,MH=50;
 const PAL={Rock:[[.0,'#1a1b22'],[.35,'#3a3b45'],[.65,'#6c6d78'],[1,'#b0b2c0']],Desert:[[0,'#4a3012'],[.35,'#8a5a22'],[.6,'#c8924a'],[.85,'#e6bd7a'],[1,'#fff0c8']],Ice:[[0,'#3a5a80'],[.4,'#7fa6c7'],[.7,'#b9d6ea'],[1,'#f0f7ff']],Ocean:[[0,'#0d2a4f'],[.45,'#155a8a'],[.6,'#c9b47a'],[1,'#5a7d3a']],Jungle:[[0,'#1d3b1f'],[.4,'#2f6b2a'],[.7,'#4f9a3a'],[1,'#9fc15a']],Volcanic:[[0,'#1a0d0a'],[.4,'#4a2418'],[.7,'#8a3a1c'],[1,'#ff6a2a']],Fungal:[[0,'#2a1638'],[.4,'#5a2d6e'],[.7,'#9a4fb0'],[1,'#e0a0ff']],Crystal:[[0,'#0e2a2a'],[.4,'#1f6e6e'],[.7,'#4fd6c4'],[1,'#dffcf8']]};
 function palCol(b,v){const p=PAL[b];for(let i=1;i<p.length;i++)if(v<=p[i][0]){const t=(v-p[i-1][0])/(p[i][0]-p[i-1][0]);return mix(p[i-1][1],p[i][1],t)}return p[p.length-1][1]}
 function mix(a,b,t){const A=parseInt(a.slice(1),16),B=parseInt(b.slice(1),16);const r=lerp(A>>16,B>>16,t),g=lerp(A>>8&255,B>>8&255,t),bl=lerp(A&255,B&255,t);return `rgb(${r|0},${g|0},${bl|0})`}
-function land(p,zone=1){const zy0=[-1,-.34,.33][zone],zy1=[-.34,.33,1][zone];let zs=0,zn=0;for(let i=0;i<160;i++){const x=(hash(p.seed,i,401)-.5)*2,y=zy0+hash(p.seed,i,402)*(zy1-zy0);if(x*x+y*y>1)continue;zs+=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);zn++}const zDens=clamp(((zs/Math.max(1,zn))-.12)*3.6,0,1);const glyphRich=G.glyphMark&&!G.glyphClaimed&&Math.hypot(p.x-G.glyphMark.x,p.y-G.glyphMark.y)<600;if(glyphRich)G.glyphClaimed=1;const seed=p.seed;let k=0;const rnd=()=>hash(seed,k++,77);
+function land(p,zone=1){let zDens;if(p._lz){let t2=0,n2=0;for(let i=0;i<40;i++){const a2=i/40*6.28,rr3=(i%3)*.06;const x=p._lz.sx+Math.cos(a2)*rr3,y=p._lz.sy+Math.sin(a2)*rr3;if(x*x+y*y>1)continue;t2+=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);n2++}zDens=n2?clamp(((t2/n2)-.12)*3.6,0,1):.4}else{const zy0=[-1,-.34,.33][zone]||-.34,zy1=[-.34,.33,1][zone]||.33;let zs=0,zn=0;for(let i=0;i<160;i++){const x=(hash(p.seed,i,401)-.5)*2,y=zy0+hash(p.seed,i,402)*(zy1-zy0);if(x*x+y*y>1)continue;zs+=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);zn++}zDens=clamp(((zs/Math.max(1,zn))-.12)*3.6,0,1)}const glyphRich=G.glyphMark&&!G.glyphClaimed&&Math.hypot(p.x-G.glyphMark.x,p.y-G.glyphMark.y)<600;if(glyphRich)G.glyphClaimed=1;const seed=p.seed;let k=0;const rnd=()=>hash(seed,k++,77);
  const el=new Float32Array(MW*MH);for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)el[y*MW+x]=clamp(fbm(x/9+seed*.37,y/9+seed*.11,5)*1.15-.05,0,1);
  const gy=(x,y)=>el[clamp(y|0,0,MH-1)*MW+clamp(x|0,0,MW-1)];
  const water=p.bio==='Ocean'?.5:p.bio==='Jungle'?.3:p.bio==='Ice'?.25:-1;
@@ -833,7 +834,16 @@ function drawStar(sy){const pulse=1+Math.sin(G.t*1.5+sy.x)*.05;const R0=26;
 const CTEX={};function cloudTex(p){if(CTEX[p.id])return CTEX[p.id];const N=96,c2=offc(N,N),g=c2.getContext('2d'),im=g.createImageData(N,N),d=im.data;for(let y=0;y<N;y++)for(let x=0;x<N;x++){const dx=x/N-.5,dy=y/N-.5;if(dx*dx+dy*dy>.25)continue;const v=fbm(x/17+p.seed*.7,y/17+p.seed*.31,3);const a=clamp((v-.52)*3.2,0,1)*200;const i2=(y*N+x)*4;d[i2]=255;d[i2+1]=255;d[i2+2]=255;d[i2+3]=a}g.putImageData(im,0,0);return CTEX[p.id]=c2}
 function drawPlanet(p,sy){const la=Math.atan2(sy.y-p.y,sy.x-p.x);const tex=planetTex(p);const r=p.r;
  if(p.atm!=='None'){const ag=cx.createRadialGradient(p.x,p.y,r*.9,p.x,p.y,r*1.7);ag.addColorStop(0,`hsla(${p.hue},70%,70%,.45)`);ag.addColorStop(.5,`hsla(${p.hue},70%,70%,.12)`);ag.addColorStop(1,'transparent');cx.fillStyle=ag;cx.beginPath();cx.arc(p.x,p.y,r*1.7,0,6.28);cx.fill()}
- if(p.rings){cx.save();cx.translate(p.x,p.y);cx.rotate(.3);cx.scale(1,.32);for(let k=0;k<3;k++){cx.strokeStyle=`hsla(${p.hue+20},45%,${70-k*10}%,${.55-k*.12})`;cx.lineWidth=3-k*.5;cx.beginPath();cx.arc(0,0,r*(1.55+k*.22),0,6.28);cx.stroke()}cx.restore()}
+ const ringPass=(front)=>{if(!p.rings)return;cx.save();cx.translate(p.x,p.y);cx.rotate(.3);cx.scale(1,.32);
+  const a0=front?0:Math.PI,a1=front?Math.PI:Math.PI*2;
+  for(let k=0;k<16;k++){const rr2=r*(1.42+k*.036);if(rr2>r*1.6&&rr2<r*1.66)continue; // Cassini gap
+   const hv=hash(p.seed,k,61);const al=(.12+hv*.3)*(front?1.15:.8);
+   cx.strokeStyle=`hsla(${p.hue+14+hv*18},${30+hv*25}%,${58+hv*22}%,${al})`;cx.lineWidth=.9+hv*1.7;
+   cx.beginPath();cx.arc(0,0,rr2,a0,a1);cx.stroke()}
+  // dense inner sheen
+  const shg=cx.createRadialGradient(0,0,r*1.4,0,0,r*2.0);shg.addColorStop(0,`hsla(${p.hue+16},40%,70%,${front?.10:.06})`);shg.addColorStop(.5,`hsla(${p.hue+16},40%,60%,${front?.05:.03})`);shg.addColorStop(1,'transparent');cx.strokeStyle='transparent';cx.fillStyle=shg;cx.beginPath();cx.arc(0,0,r*2.0,a0,a1);cx.arc(0,0,r*1.42,front?Math.PI:Math.PI*2,front?0:Math.PI,true);cx.closePath();cx.fill();
+  cx.restore()};
+ ringPass(false);
  cx.save();cx.beginPath();cx.arc(p.x,p.y,r,0,6.28);cx.clip();cx.save();cx.translate(p.x,p.y);cx.rotate(G.t*.02*(1+hash(p.seed,1,1)));cx.drawImage(tex,-r*1.05,-r*1.05,r*2.1,r*2.1);cx.restore();
  // cloud deck (separate rotation)
  if(p.atm!=='None'&&p.bio!=='Volcanic'){cx.save();cx.globalAlpha=p.bio==='Ocean'||p.bio==='Jungle'?.7:.45;cx.translate(p.x,p.y);cx.rotate(G.t*.031*(1+hash(p.seed,2,1)));cx.drawImage(cloudTex(p),-r*1.08,-r*1.08,r*2.16,r*2.16);cx.restore();cx.globalAlpha=1}
@@ -842,6 +852,7 @@ function drawPlanet(p,sy){const la=Math.atan2(sy.y-p.y,sy.x-p.x);const tex=plane
  // limb darkening
  {const ld=cx.createRadialGradient(p.x,p.y,r*.55,p.x,p.y,r);ld.addColorStop(0,'rgba(0,0,0,0)');ld.addColorStop(.82,'rgba(0,0,6,.12)');ld.addColorStop(1,'rgba(0,0,8,.5)');cx.fillStyle=ld;cx.fillRect(p.x-r,p.y-r,r*2,r*2)}
  const sg=cx.createRadialGradient(p.x+Math.cos(la)*r*.55,p.y+Math.sin(la)*r*.55,r*.15,p.x,p.y,r*1.05);sg.addColorStop(0,'rgba(255,255,240,.28)');sg.addColorStop(.45,'rgba(0,0,0,0)');sg.addColorStop(.8,'rgba(0,0,10,.65)');sg.addColorStop(1,'rgba(0,0,10,.9)');cx.fillStyle=sg;cx.fillRect(p.x-r,p.y-r,r*2,r*2);
+ ringPass(true);
  // lit-side atmosphere rim
  if(p.atm!=='None'){cx.strokeStyle=`hsla(${p.hue},85%,80%,.55)`;cx.lineWidth=1.6;cx.beginPath();cx.arc(p.x,p.y,r-.8,la-1.25,la+1.25);cx.stroke()}
  cx.restore();
