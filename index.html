@@ -399,11 +399,17 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
    <div style="display:flex;gap:8px"><button class="go" id="bLand" style="margin:0" ${G.fuel<cost?'disabled':''}>LAND · ${cost} FUEL${G.hold>=G.holdMax?' · HOLDS FULL':''}</button><button style="margin:0" onclick="closePanel()">STAY IN ORBIT</button></div>
   </div></div>`;
  let zone=1;const OV={min:false,bio:false};
- // precompute overlay points in texture space (unit disc coords, r<=1)
- const mpts=[],bpts=[],cpts=[];
- {let k=0;const rr=()=>hash(p.seed,k++,301);
-  for(let i=0;i<340;i++){const a=rr()*6.28,r2=Math.sqrt(rr());const x=Math.cos(a)*r2,y=Math.sin(a)*r2;const d2=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);if(d2>.55)mpts.push([x,y,(d2-.55)*2.2])}
-  for(let i=0;i<170;i++){const a=rr()*6.28,r2=Math.sqrt(rr());const x=Math.cos(a)*r2,y=Math.sin(a)*r2;if(Math.abs(y)<.62&&fbm(x*2.4-p.seed*.3,y*2.4+p.seed*.7,3)>.55)bpts.push([x,y])}
+ // per-pixel overlay textures in surface space (rotate with the globe)
+ const cpts=[];const bandSum=[0,0,0],bandN=[1,1,1];
+ const NOV=132;const mOv=offc(NOV,NOV),bOv=offc(NOV,NOV);
+ {const mg2=mOv.getContext('2d'),bg2=bOv.getContext('2d');const mi=mg2.createImageData(NOV,NOV),bi=bg2.createImageData(NOV,NOV);const md=mi.data,bd=bi.data;
+  for(let py=0;py<NOV;py++)for(let px=0;px<NOV;px++){const x=(px/NOV-.5)*2,y=(py/NOV-.5)*2;if(x*x+y*y>1)continue;const i4=(py*NOV+px)*4;
+   const d2=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);
+   const bz=y<-.34?0:y<.33?1:2;bandSum[bz]+=d2;bandN[bz]++;
+   if(d2>.36){const t2=(d2-.36)*2.6;md[i4]=255;md[i4+1]=170+t2*80;md[i4+2]=40+t2*140;md[i4+3]=Math.min(240,95+t2*300)}
+   if(p.life&&Math.abs(y)<.66){const l2=fbm(x*2.6-p.seed*.3,y*2.6+p.seed*.7,3);if(l2>.46){const t3=(l2-.46)*2.6;bd[i4]=60;bd[i4+1]=235;bd[i4+2]=205;bd[i4+3]=Math.min(235,95+t3*300)}}}
+  mg2.putImageData(mi,0,0);bg2.putImageData(bi,0,0);
+  let k=0;const rr=()=>hash(p.seed,k++,301);
   if(civ!=='none'){const nc=civ==='active'?2:3;for(let i=0;i<nc;i++){const a=rr()*6.28,r2=.25+Math.sqrt(rr())*.6;cpts.push([Math.cos(a)*r2,Math.sin(a)*r2])}}}
  const gc=$('globeC').getContext('2d');
  const drawGlobe=()=>{const N=220,R2=100;gc.clearRect(0,0,N,N);gc.save();gc.translate(110,110);
@@ -415,14 +421,15 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
   if(p.atm!=='None'&&p.bio!=='Volcanic'){gc.save();gc.globalAlpha=.5;gc.rotate(rot*1.55);gc.drawImage(cloudTex(p),-R2*1.08,-R2*1.08,R2*2.16,R2*2.16);gc.restore();gc.globalAlpha=1}
   // zone band highlight
   {const bands=[[-1,-.34],[-.32,.32],[.34,1]][zone];gc.fillStyle='rgba(242,180,65,.10)';gc.fillRect(-R2,bands[0]*R2,R2*2,(bands[1]-bands[0])*R2);gc.strokeStyle='rgba(242,180,65,.5)';gc.setLineDash([4,4]);gc.beginPath();gc.moveTo(-R2,bands[0]*R2);gc.lineTo(R2,bands[0]*R2);gc.moveTo(-R2,bands[1]*R2);gc.lineTo(R2,bands[1]*R2);gc.stroke();gc.setLineDash([])}
-  // overlays rotate with surface
+  // overlays rotate with surface (pixel maps)
   const dot=(x,y,fn)=>{const ca=Math.cos(rot),sa=Math.sin(rot);const rx=(x*ca-y*sa)*R2,ry=(x*sa+y*ca)*R2;fn(rx,ry)};
-  if(OV.min){gc.globalCompositeOperation='lighter';for(const [x,y,i2] of mpts)dot(x,y,(rx,ry)=>{gc.fillStyle=`rgba(255,190,70,${.25+i2*.4})`;gc.beginPath();gc.arc(rx,ry,1.6+i2*2.4,0,6.28);gc.fill()});gc.globalCompositeOperation='source-over'}
-  if(OV.bio){for(const [x,y] of bpts)dot(x,y,(rx,ry)=>{gc.fillStyle='rgba(79,214,196,.75)';gc.fillRect(rx-1,ry-1,2,2)})}
+
   for(const [x,y] of cpts)dot(x,y,(rx,ry)=>{if(civ==='active'){if(Math.sin(G.t*4)>0){gc.fillStyle='#4fd6c4';gc.fillRect(rx-2,ry-2,4,4);gc.strokeStyle='rgba(79,214,196,.5)';gc.beginPath();gc.arc(rx,ry,6+Math.sin(G.t*4)*2,0,6.28);gc.stroke()}}else{gc.fillStyle='#b48cf2';gc.save();gc.translate(rx,ry);gc.rotate(.785);gc.strokeStyle='#b48cf2';gc.strokeRect(-2.5,-2.5,5,5);gc.restore()}});
   // terminator + limb + rim
   const sg2=gc.createRadialGradient(-R2*.5,-R2*.3,R2*.1,0,0,R2*1.02);sg2.addColorStop(0,'rgba(255,255,240,.22)');sg2.addColorStop(.5,'rgba(0,0,0,0)');sg2.addColorStop(.85,'rgba(0,0,10,.55)');sg2.addColorStop(1,'rgba(0,0,10,.85)');gc.fillStyle=sg2;gc.fillRect(-R2,-R2,R2*2,R2*2);
   const ld2=gc.createRadialGradient(0,0,R2*.6,0,0,R2);ld2.addColorStop(0,'rgba(0,0,0,0)');ld2.addColorStop(1,'rgba(0,0,8,.45)');gc.fillStyle=ld2;gc.fillRect(-R2,-R2,R2*2,R2*2);
+  if(OV.min){gc.save();gc.rotate(rot);gc.globalCompositeOperation='lighter';gc.imageSmoothingEnabled=false;gc.drawImage(mOv,-R2,-R2,R2*2,R2*2);gc.restore();gc.globalCompositeOperation='source-over'}
+  if(OV.bio){gc.save();gc.rotate(rot);gc.imageSmoothingEnabled=false;gc.drawImage(bOv,-R2,-R2,R2*2,R2*2);gc.restore()}
   gc.restore();
   gc.strokeStyle=`hsla(${p.hue},85%,80%,.5)`;gc.lineWidth=1.4;gc.beginPath();gc.arc(110,110,R2-1,3.4,5.0);gc.stroke();
   // scan sweep line when any overlay on
@@ -430,7 +437,7 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
  if(window.ORBIV)clearInterval(window.ORBIV);
  window.ORBIV=setInterval(()=>{if(G.mode!=='orbit'||!document.body.contains($('globeC'))){clearInterval(window.ORBIV);window.ORBIV=null;return}drawGlobe()},50);
  drawGlobe();
- const bandAvg=z=>{const y0=[-1,-.32,.34][z],y1=[-.34,.32,1][z];let t2=0,n2=0;for(const [x,y,i2] of mpts)if(y>=y0&&y<=y1){t2+=i2;n2++}return n2?t2/Math.max(6,n2)*3:0};
+ const bandAvg=z=>clamp((bandSum[z]/bandN[z]-.12)*3.6,0,1);
  $('mScan').onclick=()=>{OV.min=!OV.min;const out=$('scanOut');if(!OV.min){out.innerHTML='';return}
   out.innerHTML=`<div class="eyebrow" style="font-size:9px">MINERAL DENSITY · ORE GLOW ON GLOBE</div>${[0,1,2].map(z=>{const v=clamp(bandAvg(z),0,1);return `<div style="display:flex;align-items:center;gap:6px"><span style="width:52px;color:var(--dim);font-size:10px">${['NORTH','EQUATOR','SOUTH'][z]}</span><div style="flex:1;height:5px;background:#0f1119;border:1px solid #2b3044"><div style="height:100%;width:${Math.round(v*100)}%;background:var(--amber)"></div></div></div>`}).join('')}<div style="color:var(--dim);font-size:10px">${p.min.n} ${p.min.v}¢/t · ${p.min2.n} ${p.min2.v}¢/t${sci>=2?` · est. ${11+p.tier} deposits`:''}</div>`;snd('ping');gainXp('science',3)};
  $('bScan').onclick=()=>{OV.bio=!OV.bio;const out=$('scanOut');if(!OV.bio){out.innerHTML='';return}
