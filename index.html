@@ -220,7 +220,7 @@ function systemAt(cx_,cy_){if(cx_===0&&cy_===0)return homeSys();if(cx_===ORR.cx&
   planets.push(mkPlanet({id:`${cx_},${cy_},${i}`,x:sx+Math.cos(ang)*orb,y:sy+Math.sin(ang)*orb,r:14+hash(cx_,cy_,30+i)*14,tier,d,seed:(cx_*131+cy_*17+i*7)|0,h:(k)=>hash(cx_,cy_,100+i*10+k),name:pname(cx_,cy_,i),sysName:'System '+Math.floor(hash(cx_,cy_,8)*9000+100)}))}
  const sc2=hash(cx_,cy_,13);const shue=sc2<.45?sc2*90:sc2<.8?190+sc2*70:300+sc2*60;const sysObj={x:sx,y:sy,hue:shue,col:`hsl(${shue},${sc2<.45?90:75}%,${sc2<.45?72:82}%)`,planets,name:planets[0].sysName,hidden,cx:cx_,cy:cy_};if(hidden)for(const p of planets)if(hash(cx_,cy_,12)<.5)p.hidden=true;sysCache[key]=sysObj;return sysObj}
 function mkPlanet(p){const h=p.h;p.bio=BIO[clamp(Math.floor(h(1)*8),0,7)];p.atm=ATM[Math.floor(h(2)*6)];p.grav=(.3+h(3)*1.9).toFixed(1);p.temp=Math.round(-180+h(4)*500);p.hue=p.bio==='Ice'?200:p.bio==='Ocean'?210:p.bio==='Jungle'?120:p.bio==='Volcanic'?10:p.bio==='Desert'?38:p.bio==='Fungal'?290:p.bio==='Crystal'?180:h(5)*360;
- p.rings=h(6)<.2;p.min=MIN[p.tier];p.min2=MIN[Math.max(0,p.tier-1-Math.floor(h(7)*2))];p.life=h(8)<.75?genLife(p,0):null;p.life2=h(8)<.4?genLife(p,1):null;p.art=h(9)<(.15+p.d/25000)?ARTI[p.tier]:null;p.hostile=p.tier>=3&&h(10)<.5;const cv3=h(11);p.civ=cv3<.16?'active':cv3<.5?'former':'none';return p}
+ p.rings=h(6)<.2;p.min=MIN[p.tier];p.min2=MIN[Math.max(0,p.tier-1-Math.floor(h(7)*2))];p.life=h(8)<.75?genLife(p,0):null;p.life2=h(8)<.4?genLife(p,1):null;p.art=h(9)<(.15+p.d/25000)?ARTI[p.tier]:null;p.hostile=p.tier>=3&&h(10)<.5;const cv3=h(11);p.civ=cv3<.16?'active':cv3<.5?'former':'none';p.civVault=p.civ==='former'&&h(12)<.45;return p}
 function pname(a,b,i){const S=['Ka','Ve','Ru','Ol','Th','Sa','Mi','Do'],E=['ris','nn','vor','eth','ka','lum','os','ra'];return S[Math.floor(hash(a,b,70+i)*8)]+E[Math.floor(hash(a,b,80+i)*8)]}
 function homeSys(){if(HOME)return HOME;const h=k=>hash(3,3,k);HOME={x:0,y:0,hue:45,col:'#ffe9a8',name:'Hearth',station:{x:0,y:-180},planets:[mkPlanet({id:'home',x:260,y:60,r:22,tier:0,d:0,seed:7,h,name:'Ember',sysName:'Hearth'}),mkPlanet({id:'home2',x:-330,y:140,r:16,tier:0,d:0,seed:11,h:k=>hash(5,9,k),name:'Ash',sysName:'Hearth'})]};HOME.planets[0].bio='Desert';HOME.planets[0].atm='Thin';HOME.planets[1].bio='Ice';return HOME}
 function nearSystems(){const out=[];const ci=Math.floor(G.ship.x/CELL),cj=Math.floor(G.ship.y/CELL);for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++){const s=systemAt(ci+i,cj+j);if(s)out.push(s)}return out}
@@ -386,7 +386,7 @@ function boardDerelict(){const d=G.nearDer;G.derelicts[d.key]=1;if(!G.derFound)G
 function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');const cost=Math.round(6+p.grav*5);
  const known=G.visited[p.id];const sci=skillLv('science');
  const civ=p.civ||'none';
- const civLine=civ==='active'?'<span style="color:var(--teal)">ACTIVE COLONY — trade pads and patrols below</span>':civ==='former'?'<span style="color:var(--violet)">SILENT RUINS — a former civilization built here</span>':'<span style="color:var(--dim)">no civilization signals</span>';
+ const civLine=civ==='active'?'<span style="color:var(--teal)">ACTIVE COLONY — trade pads and patrols below</span>':civ==='former'?`<span style="color:var(--violet)">SILENT RUINS — a former civilization built here${p.civVault?' · sealed vault signature':''}</span>`:'<span style="color:var(--dim)">no civilization signals</span>';
  c.innerHTML=`<div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="eyebrow">${p.sysName} · orbit</span><h1 style="font-size:22px;margin:0">${p.name.toUpperCase()}</h1><span style="font-size:11px;color:var(--dim)">${p.bio} · ${p.atm} atm · ${p.grav} g · ${p.temp}°C</span></div>
  <div style="display:flex;gap:14px;flex:1;min-height:0;margin-top:6px;align-items:stretch">
   <div style="flex:none;display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center"><canvas id="globeC" width="220" height="220" style="width:min(38vw,calc(var(--vhpx,100vh)*.58));height:min(38vw,calc(var(--vhpx,100vh)*.58))"></canvas><div id="gLegend" style="font-size:9px;color:var(--dim);letter-spacing:.1em">ORBITAL CAMERA</div></div>
@@ -407,7 +407,7 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
    const d2=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);
    const bz=y<-.34?0:y<.33?1:2;bandSum[bz]+=d2;bandN[bz]++;
    if(d2>.36){const t2=(d2-.36)*2.6;md[i4]=255;md[i4+1]=170+t2*80;md[i4+2]=40+t2*140;md[i4+3]=Math.min(240,95+t2*300)}
-   if(p.life&&Math.abs(y)<.66){const l2=fbm(x*2.6-p.seed*.3,y*2.6+p.seed*.7,3);if(l2>.46){const t3=(l2-.46)*2.6;bd[i4]=60;bd[i4+1]=235;bd[i4+2]=205;bd[i4+3]=Math.min(235,95+t3*300)}}}
+   if(p.life&&Math.abs(y)<.66){const l2=fbm(x*2.6-p.seed*.3,y*2.6+p.seed*.7,3);if(l2>.46){const t3=(l2-.46)*2.6;const rar2=Math.max(p.life.rar||0,(p.life2&&p.life2.rar)||0);const col2=rar2>=3?[255,200,80]:rar2>=2?[200,150,255]:[60,235,205];bd[i4]=col2[0];bd[i4+1]=col2[1];bd[i4+2]=col2[2];bd[i4+3]=Math.min(235,95+t3*300)}}}
   mg2.putImageData(mi,0,0);bg2.putImageData(bi,0,0);
   let k=0;const rr=()=>hash(p.seed,k++,301);
   if(civ!=='none'){const nc=civ==='active'?2:3;for(let i=0;i<nc;i++){const a=rr()*6.28,r2=.25+Math.sqrt(rr())*.6;cpts.push([Math.cos(a)*r2,Math.sin(a)*r2])}}}
@@ -424,12 +424,13 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
   // overlays rotate with surface (pixel maps)
   const dot=(x,y,fn)=>{const ca=Math.cos(rot),sa=Math.sin(rot);const rx=(x*ca-y*sa)*R2,ry=(x*sa+y*ca)*R2;fn(rx,ry)};
 
-  for(const [x,y] of cpts)dot(x,y,(rx,ry)=>{if(civ==='active'){if(Math.sin(G.t*4)>0){gc.fillStyle='#4fd6c4';gc.fillRect(rx-2,ry-2,4,4);gc.strokeStyle='rgba(79,214,196,.5)';gc.beginPath();gc.arc(rx,ry,6+Math.sin(G.t*4)*2,0,6.28);gc.stroke()}}else{gc.fillStyle='#b48cf2';gc.save();gc.translate(rx,ry);gc.rotate(.785);gc.strokeStyle='#b48cf2';gc.strokeRect(-2.5,-2.5,5,5);gc.restore()}});
+  for(const [x,y] of cpts)dot(x,y,(rx,ry)=>{if(civ==='active'){if(Math.sin(G.t*4)>0){gc.fillStyle='#4fd6c4';gc.fillRect(rx-2,ry-2,4,4);gc.strokeStyle='rgba(79,214,196,.5)';gc.beginPath();gc.arc(rx,ry,6+Math.sin(G.t*4)*2,0,6.28);gc.stroke()}}else{gc.fillStyle='#b48cf2';gc.save();gc.translate(rx,ry);gc.rotate(.785);gc.strokeStyle='#b48cf2';gc.strokeRect(-2.5,-2.5,5,5);gc.restore();if(p.civVault){gc.strokeStyle=`rgba(180,140,242,${.4+Math.sin(G.t*3)*.35})`;gc.beginPath();gc.arc(rx,ry,7+Math.sin(G.t*3)*2,0,6.28);gc.stroke()}}});
   // terminator + limb + rim
   const sg2=gc.createRadialGradient(-R2*.5,-R2*.3,R2*.1,0,0,R2*1.02);sg2.addColorStop(0,'rgba(255,255,240,.22)');sg2.addColorStop(.5,'rgba(0,0,0,0)');sg2.addColorStop(.85,'rgba(0,0,10,.55)');sg2.addColorStop(1,'rgba(0,0,10,.85)');gc.fillStyle=sg2;gc.fillRect(-R2,-R2,R2*2,R2*2);
   const ld2=gc.createRadialGradient(0,0,R2*.6,0,0,R2);ld2.addColorStop(0,'rgba(0,0,0,0)');ld2.addColorStop(1,'rgba(0,0,8,.45)');gc.fillStyle=ld2;gc.fillRect(-R2,-R2,R2*2,R2*2);
-  if(OV.min){gc.save();gc.rotate(rot);gc.globalCompositeOperation='lighter';gc.imageSmoothingEnabled=false;gc.drawImage(mOv,-R2,-R2,R2*2,R2*2);gc.restore();gc.globalCompositeOperation='source-over'}
-  if(OV.bio){gc.save();gc.rotate(rot);gc.imageSmoothingEnabled=false;gc.drawImage(bOv,-R2,-R2,R2*2,R2*2);gc.restore()}
+  const wipe=(t0,fn)=>{const pr2=clamp((G.t-(t0||0))*.9,0,1);gc.save();gc.beginPath();gc.rect(-R2,-R2,R2*2,R2*2*pr2);gc.clip();fn();gc.restore();if(pr2<1){gc.strokeStyle='rgba(126,240,255,.8)';gc.lineWidth=1.5;gc.beginPath();gc.moveTo(-R2,-R2+R2*2*pr2);gc.lineTo(R2,-R2+R2*2*pr2);gc.stroke()}};
+  if(OV.min)wipe(OV.mt,()=>{gc.save();gc.rotate(rot);gc.globalCompositeOperation='lighter';gc.imageSmoothingEnabled=false;gc.drawImage(mOv,-R2,-R2,R2*2,R2*2);gc.restore();gc.globalCompositeOperation='source-over'});
+  if(OV.bio)wipe(OV.bt,()=>{gc.save();gc.rotate(rot);gc.imageSmoothingEnabled=false;gc.drawImage(bOv,-R2,-R2,R2*2,R2*2);gc.restore()});
   gc.restore();
   gc.strokeStyle=`hsla(${p.hue},85%,80%,.5)`;gc.lineWidth=1.4;gc.beginPath();gc.arc(110,110,R2-1,3.4,5.0);gc.stroke();
   // scan sweep line when any overlay on
@@ -438,11 +439,11 @@ function openOrbit(p){G.mode='orbit';G.ship.vx=G.ship.vy=0;const c=$('orbCard');
  window.ORBIV=setInterval(()=>{if(G.mode!=='orbit'||!document.body.contains($('globeC'))){clearInterval(window.ORBIV);window.ORBIV=null;return}drawGlobe()},50);
  drawGlobe();
  const bandAvg=z=>clamp((bandSum[z]/bandN[z]-.12)*3.6,0,1);
- $('mScan').onclick=()=>{OV.min=!OV.min;const out=$('scanOut');if(!OV.min){out.innerHTML='';return}
+ $('mScan').onclick=()=>{OV.min=!OV.min;OV.mt=G.t;const out=$('scanOut');if(!OV.min){out.innerHTML='';return}
   out.innerHTML=`<div class="eyebrow" style="font-size:9px">MINERAL DENSITY · ORE GLOW ON GLOBE</div>${[0,1,2].map(z=>{const v=clamp(bandAvg(z),0,1);return `<div style="display:flex;align-items:center;gap:6px"><span style="width:52px;color:var(--dim);font-size:10px">${['NORTH','EQUATOR','SOUTH'][z]}</span><div style="flex:1;height:5px;background:#0f1119;border:1px solid #2b3044"><div style="height:100%;width:${Math.round(v*100)}%;background:var(--amber)"></div></div></div>`}).join('')}<div style="color:var(--dim);font-size:10px">${p.min.n} ${p.min.v}¢/t · ${p.min2.n} ${p.min2.v}¢/t${sci>=2?` · est. ${11+p.tier} deposits`:''}</div>`;snd('ping');gainXp('science',3)};
- $('bScan').onclick=()=>{OV.bio=!OV.bio;const out=$('scanOut');if(!OV.bio){out.innerHTML='';return}
+ $('bScan').onclick=()=>{OV.bio=!OV.bio;OV.bt=G.t;const out=$('scanOut');if(!OV.bio){out.innerHTML='';return}
   const rows=[p.life,p.life2].filter(Boolean).map(L=>`<div style="display:flex;justify-content:space-between"><span><b style="color:${L.rar===3?'var(--amber)':L.rar>=2?'var(--violet)':'var(--bone)'}">${L.n}</b> <span style="color:var(--dim)">· ${L.form}${sci>=1?` · ${RARN[L.rar]}`:''}</span></span><b>${sci>=1?'~'+Math.round(L.v*G.lifeB)+'¢':'?'}</b></div>`).join('');
-  out.innerHTML=`<div class="eyebrow" style="font-size:9px">BIOSPHERE · HABITAT SPECKS ON GLOBE</div>${rows||'<span style="color:var(--dim)">No macroscopic life.</span>'}${G.best[p.life&&p.life.n]?'<div style="color:var(--teal);font-size:10px">Already catalogued.</div>':''}`;snd('ping');gainXp('xeno',3)};
+  out.innerHTML=`<div class="eyebrow" style="font-size:9px">BIOSPHERE · PIXELS TINTED BY RARITY</div>${rows||'<span style="color:var(--dim)">No macroscopic life.</span>'}${G.best[p.life&&p.life.n]?'<div style="color:var(--teal);font-size:10px">Already catalogued.</div>':''}`;snd('ping');gainXp('xeno',3)};
  show('pOrbit');c.querySelectorAll('.zn').forEach(b=>b.onclick=()=>{zone=+b.dataset.z;c.querySelectorAll('.zn').forEach(x=>x.classList.toggle('go',x===b))});$('bLand').onclick=()=>{G.fuel-=cost;show(null);if(p.bio==='Volcanic'&&G.hull<G.maxHull*.4){G.hull=Math.max(5,G.hull-12);msg('Volcanic re-entry scorches the weakened hull. −12 hull.',4)}G.mode='trans';startTrans('land',()=>land(p,zone),p)}}
 
 // ---------- station / ship ----------
@@ -559,18 +560,19 @@ let P=null;const TS=32,MW=70,MH=50;
 const PAL={Rock:[[.0,'#1a1b22'],[.35,'#3a3b45'],[.65,'#6c6d78'],[1,'#b0b2c0']],Desert:[[0,'#4a3012'],[.35,'#8a5a22'],[.6,'#c8924a'],[.85,'#e6bd7a'],[1,'#fff0c8']],Ice:[[0,'#3a5a80'],[.4,'#7fa6c7'],[.7,'#b9d6ea'],[1,'#f0f7ff']],Ocean:[[0,'#0d2a4f'],[.45,'#155a8a'],[.6,'#c9b47a'],[1,'#5a7d3a']],Jungle:[[0,'#1d3b1f'],[.4,'#2f6b2a'],[.7,'#4f9a3a'],[1,'#9fc15a']],Volcanic:[[0,'#1a0d0a'],[.4,'#4a2418'],[.7,'#8a3a1c'],[1,'#ff6a2a']],Fungal:[[0,'#2a1638'],[.4,'#5a2d6e'],[.7,'#9a4fb0'],[1,'#e0a0ff']],Crystal:[[0,'#0e2a2a'],[.4,'#1f6e6e'],[.7,'#4fd6c4'],[1,'#dffcf8']]};
 function palCol(b,v){const p=PAL[b];for(let i=1;i<p.length;i++)if(v<=p[i][0]){const t=(v-p[i-1][0])/(p[i][0]-p[i-1][0]);return mix(p[i-1][1],p[i][1],t)}return p[p.length-1][1]}
 function mix(a,b,t){const A=parseInt(a.slice(1),16),B=parseInt(b.slice(1),16);const r=lerp(A>>16,B>>16,t),g=lerp(A>>8&255,B>>8&255,t),bl=lerp(A&255,B&255,t);return `rgb(${r|0},${g|0},${bl|0})`}
-function land(p,zone=1){const glyphRich=G.glyphMark&&!G.glyphClaimed&&Math.hypot(p.x-G.glyphMark.x,p.y-G.glyphMark.y)<600;if(glyphRich)G.glyphClaimed=1;const seed=p.seed;let k=0;const rnd=()=>hash(seed,k++,77);
+function land(p,zone=1){const zy0=[-1,-.34,.33][zone],zy1=[-.34,.33,1][zone];let zs=0,zn=0;for(let i=0;i<160;i++){const x=(hash(p.seed,i,401)-.5)*2,y=zy0+hash(p.seed,i,402)*(zy1-zy0);if(x*x+y*y>1)continue;zs+=clamp(fbm(x*3.2+p.seed*.51,y*3.2+p.seed*.13,3)*1.5-.25,0,1);zn++}const zDens=clamp(((zs/Math.max(1,zn))-.12)*3.6,0,1);const glyphRich=G.glyphMark&&!G.glyphClaimed&&Math.hypot(p.x-G.glyphMark.x,p.y-G.glyphMark.y)<600;if(glyphRich)G.glyphClaimed=1;const seed=p.seed;let k=0;const rnd=()=>hash(seed,k++,77);
  const el=new Float32Array(MW*MH);for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)el[y*MW+x]=clamp(fbm(x/9+seed*.37,y/9+seed*.11,5)*1.15-.05,0,1);
  const gy=(x,y)=>el[clamp(y|0,0,MH-1)*MW+clamp(x|0,0,MW-1)];
  const water=p.bio==='Ocean'?.5:p.bio==='Jungle'?.3:p.bio==='Ice'?.25:-1;
  const passable=(x,y)=>{const v=gy(x,y);return v>water&&v<.93};
  const y0z=[4,Math.floor(MH*.36),Math.floor(MH*.66)][zone],y1z=[Math.floor(MH*.34),Math.floor(MH*.64),MH-4][zone];let lx,ly,tr=0;do{lx=10+rnd()*(MW-20)|0;ly=y0z+rnd()*(y1z-y0z)|0}while(!passable(lx,ly)&&tr++<500);if(tr>=500){let bi=0;for(let i=0;i<el.length;i++)if(el[i]>el[bi])bi=i;lx=bi%MW;ly=bi/MW|0;el[bi]=Math.min(el[bi],.9)}
  const place=(n,fn)=>{const out=[];let tries=0;while(out.length<n&&tries++<400){const x=2+rnd()*(MW-4),y=2+rnd()*(MH-4);if(!passable(x,y)||Math.hypot(x-lx,y-ly)<4)continue;const o=fn(x*TS+16,y*TS+16);if(o)out.push(o)}return out};
- const dep=place(11+p.tier,(x,y)=>({x,y,kind:'min',m:rnd()<.6?p.min:p.min2,left:3+(rnd()*4|0)}));if(glyphRich){for(const d2 of dep){d2.left+=5;d2.m=MIN[Math.min(7,p.tier+3)]}msg('The glyph coordinates were true — the ground here is seamed with riches.',6);snd('lvl')}
+ const dep=place(Math.max(5,Math.round((11+p.tier)*(0.6+zDens*.9))),(x,y)=>({x,y,kind:'min',m:rnd()<.6?p.min:p.min2,left:3+(rnd()*4|0)+Math.round(zDens*2)}));if(zDens>.55)msg('Rich zone — the scanner was right about this latitude.',4);else if(zDens<.2)msg('Thin ground in this zone. The scanner warned you.',4);if(glyphRich){for(const d2 of dep){d2.left+=5;d2.m=MIN[Math.min(7,p.tier+3)]}msg('The glyph coordinates were true — the ground here is seamed with riches.',6);snd('lvl')}
  const life=p.life?place(3+(rnd()*3|0),(x,y)=>({x,y,kind:'life',l:(p.life2&&rnd()<.4)?p.life2:p.life,vx:0,vy:0,ph:rnd()*6,t:0})):[];
  const fauna=p.hostile?place(2+Math.floor(p.tier/2),(x,y)=>({x,y,kind:'fauna',hp:30+p.tier*10,ph:rnd()*6})):[];
  const stypes=['ruin','wreck','cave','colony'];const sites=place(2+(rnd()*2|0),(x,y)=>({x,y,kind:'site',type:stypes[rnd()*4|0],done:false}));
- if(p.civ==='former'&&!sites.some(st=>st.type==='ruin'||st.type==='vault'))sites[0].type=rnd()<.6?'ruin':'vault';
+ if(p.civ==='former'&&!sites.some(st=>st.type==='ruin'||st.type==='vault'))sites[0].type=p.civVault?'vault':'ruin';
+ if(p.civVault&&!sites.some(st=>st.type==='vault'))sites[sites.length-1].type='vault';
  if(p.civ==='active'&&!sites.some(st=>st.type==='colony'))sites[0].type='colony';
  if(p.civ==='none')for(const st of sites)if(st.type==='colony')st.type='wreck';
  if(p.art&&!G.arts.includes(p.art)&&sites.length)sites[0].hasArt=true;if(p.vault){sites.length=0;sites.push({x:lx*TS+16+200,y:ly*TS+16,kind:'site',type:'vault',done:G.ended})}
