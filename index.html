@@ -196,20 +196,20 @@ function applyCrew(){G.crewM={};CREW.forEach(c=>{const a=picks[c.role];G.crew[c.
  if(c.role==='Captain'){if(a)G.dmg=1.3;else G.maxHull=G.hull=120}if(c.role==='Science'){if(a)G.lifeB=1.4;else G.sciB=1.25}
  if(c.role==='Navigator'){if(a)G.spd=1.2;else G.burn=.8}if(c.role==='Engineer'){if(a)G.rate=1.25;else G.rovArm=1.5}if(c.role==='Medic'){if(a)G.scanR*=1.4;else G.air=1.3}if(c.role==='Comms'){if(a)G.jamB=1.5;else G.bluffB=.15}})}
 function showEnding(){save();const d=document.createElement('div');d.style.cssText='position:fixed;inset:0;background:rgba(3,4,9,.97);z-index:70;display:flex;align-items:center;justify-content:center';
- d.innerHTML=`<div style="max-width:640px;padding:26px 30px;border:1px solid #c9b0ff;background:#0b0d16"><div class="eyebrow" style="color:var(--violet)">THE WELLSPRING</div>
- <p style="font-size:13px;line-height:1.75;color:var(--bone)">The vault opens on a room with no walls — only a slow, patient light, older than every star you have flown past. It is not a machine and it is not a god. It is a <b>beginning</b>, still happening, everywhere at once. Hearth was not consumed. Hearth was <b style="color:var(--violet)">returned</b> — drawn back into the light that first poured it out.</p>
- <p style="font-size:13px;line-height:1.75;color:var(--bone)">The survey is answered. Everything comes from here. Everything goes back. The dark between the stars is just the long way home.</p>
+ d.innerHTML=`<div style="max-width:640px;width:92vw;max-height:calc(var(--vhpx,100vh)*.9);overflow:auto;padding:14px 18px;border:1px solid #c9b0ff;background:#0b0d16"><div class="eyebrow" style="color:var(--violet)">THE WELLSPRING</div>
+ <p style="font-size:11px;line-height:1.6;margin:6px 0;color:var(--bone)">The vault opens on a room with no walls — only a slow, patient light, older than every star you have flown past. It is not a machine and it is not a god. It is a <b>beginning</b>, still happening, everywhere at once. Hearth was not consumed. Hearth was <b style="color:var(--violet)">returned</b> — drawn back into the light that first poured it out.</p>
+ <p style="font-size:11px;line-height:1.6;margin:6px 0;color:var(--bone)">The survey is answered. Everything comes from here. Everything goes back. The dark between the stars is just the long way home.</p>
  <p style="font-size:11px;color:var(--dim)">Expedition record: ${G.credits}¢ · ${G.kills} kills · ${G.arts.length} artifacts · ${Object.keys(G.best).length} species catalogued</p>
  <button class="go" id="endGo">KEEP FLYING</button></div>`;
  document.body.appendChild(d);d.querySelector('#endGo').onclick=()=>{d.remove();msg('The survey continues. The far dark is still full of ground no one has walked.',7)}}
 window.showEnding=showEnding;
 function showIntro(replay){const d=document.createElement('div');d.id='introOv';d.style.cssText='position:fixed;inset:0;background:rgba(3,4,9,.96);z-index:60;display:flex;align-items:center;justify-content:center';
- d.innerHTML=`<div style="max-width:620px;padding:26px 30px;border:1px solid #2b3044;background:#0b0d16;font-family:inherit">
+ d.innerHTML=`<div style="max-width:620px;width:92vw;max-height:calc(var(--vhpx,100vh)*.9);overflow:auto;padding:14px 18px;border:1px solid #2b3044;background:#0b0d16;font-family:inherit">
  <div class="eyebrow" style="color:var(--amber)">SURVEY AUTHORITY · SEALED BRIEFING</div>
- <p style="font-size:13px;line-height:1.7;color:var(--bone)">Hearth is gone. Not destroyed — <b>consumed</b>, and the spectra say every star out here is older than it should be. Something has been drinking light since before your species counted years.</p>
- <p style="font-size:13px;line-height:1.7;color:var(--bone)">The old races left glyphs. The glyphs point somewhere. The Authority believes they point to <b style="color:var(--violet)">the Wellspring — the source of all creation</b> — and that whatever consumed Hearth is feeding on it.</p>
- <p style="font-size:13px;line-height:1.7;color:var(--dim)">Recover artifacts. Read the rooftop glyphs. Follow them into the far dark, and bring back the truth of where everything began.</p>
- <button class="go" style="margin-top:8px" id="introGo">${replay?'CLOSE':'ACCEPT THE SURVEY'}</button></div>`;
+ <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--bone)">Hearth is gone. Not destroyed — <b>consumed</b>, and the spectra say every star out here is older than it should be. Something has been drinking light since before your species counted years.</p>
+ <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--bone)">The old races left glyphs. The glyphs point somewhere. The Authority believes they point to <b style="color:var(--violet)">the Wellspring — the source of all creation</b> — and that whatever consumed Hearth is feeding on it.</p>
+ <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--dim)">Recover artifacts. Read the rooftop glyphs. Follow them into the far dark, and bring back the truth of where everything began.</p>
+ <button class="go" style="margin-top:6px" id="introGo">${replay?'CLOSE':'ACCEPT THE SURVEY'}</button></div>`;
  document.body.appendChild(d);d.querySelector('#introGo').onclick=()=>{d.remove();if(!replay&&!G._launched)launch()}}
 window.showIntro=showIntro;
 $('bQuick').onclick=()=>{CREW.forEach(c=>picks[c.role]=0);drawCrew();showIntro(false)};$('bStart').onclick=()=>showIntro(false);$('bHow').onclick=()=>show('pHow');
