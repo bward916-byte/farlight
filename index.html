@@ -45,6 +45,8 @@ p{font-size:12px;line-height:1.45;color:#bdb8a8}
 #p1.on{display:flex;flex-direction:column;min-height:0}
 #orbCard,#hailCard{width:96vw!important;max-width:96vw;height:calc(var(--vhpx,100vh)*.92);display:flex;flex-direction:column;overflow:hidden}
 #hailCard{overflow-y:auto}
+@keyframes wspUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.wspP{opacity:0;animation:wspUp .8s ease forwards}
 #stCard{width:96vw!important;max-width:96vw;height:calc(var(--vhpx,100vh)*.92);display:flex;flex-direction:column}
 #stCard .tab.on{flex:1;min-height:0;overflow:auto}
 .wcard{border:1px solid #2b3044;background:rgba(18,20,31,.55);padding:7px 9px;display:flex;align-items:center;gap:9px}
@@ -203,14 +205,27 @@ function showEnding(){save();const d=document.createElement('div');d.style.cssTe
  <button class="go" id="endGo">KEEP FLYING</button></div>`;
  document.body.appendChild(d);d.querySelector('#endGo').onclick=()=>{d.remove();msg('The survey continues. The far dark is still full of ground no one has walked.',7)}}
 window.showEnding=showEnding;
-function showIntro(replay){const d=document.createElement('div');d.id='introOv';d.style.cssText='position:fixed;inset:0;background:rgba(3,4,9,.96);z-index:60;display:flex;align-items:center;justify-content:center';
- d.innerHTML=`<div style="max-width:620px;width:92vw;max-height:calc(var(--vhpx,100vh)*.9);overflow:auto;padding:14px 18px;border:1px solid #2b3044;background:#0b0d16;font-family:inherit">
- <div class="eyebrow" style="color:var(--amber)">SURVEY AUTHORITY · SEALED BRIEFING</div>
- <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--bone)">Hearth is gone. Not destroyed — <b>consumed</b>, and the spectra say every star out here is older than it should be. Something has been drinking light since before your species counted years.</p>
- <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--bone)">The old races left glyphs. The glyphs point somewhere. The Authority believes they point to <b style="color:var(--violet)">the Wellspring — the source of all creation</b> — and that whatever consumed Hearth is feeding on it.</p>
- <p style="font-size:11px;line-height:1.55;margin:6px 0;color:var(--dim)">Recover artifacts. Read the rooftop glyphs. Follow them into the far dark, and bring back the truth of where everything began.</p>
- <button class="go" style="margin-top:6px" id="introGo">${replay?'CLOSE':'ACCEPT THE SURVEY'}</button></div>`;
- document.body.appendChild(d);d.querySelector('#introGo').onclick=()=>{d.remove();if(!replay&&!G._launched)launch()}}
+function showIntro(replay){const d=document.createElement('div');d.id='introOv';d.style.cssText='position:fixed;inset:0;background:rgba(3,4,9,.97);z-index:60;display:flex;align-items:center;justify-content:center';
+ d.innerHTML=`<div style="max-width:560px;width:92vw;max-height:calc(var(--vhpx,100vh)*.9);overflow:auto;padding:12px 18px 14px;border:1px solid #2b3044;background:#0b0d16;text-align:center">
+ <canvas id="wspC" width="520" height="130" style="width:100%;height:110px;display:block"></canvas>
+ <div class="eyebrow" style="color:var(--violet);justify-content:center;display:flex" class="wspP">THE WELLSPRING</div>
+ <p class="wspP" style="font-size:12px;line-height:1.6;margin:7px 0;color:var(--bone);animation-delay:.5s">The stars out here are dying <b>old</b>. Something has been drinking their light since before light had a name.</p>
+ <p class="wspP" style="font-size:12px;line-height:1.6;margin:7px 0;color:var(--bone);animation-delay:1.2s">The glyphs speak of the <b style="color:var(--violet)">Wellspring</b> — the power that lit the first star. It took Hearth. It is still burning, somewhere in the far dark.</p>
+ <p class="wspP" style="font-size:12px;line-height:1.6;margin:7px 0;color:var(--amber);animation-delay:1.9s"><b>Find it.</b></p>
+ <button class="go wspP" style="margin-top:4px;animation-delay:2.4s" id="introGo">${replay?'CLOSE':'ACCEPT THE SURVEY'}</button></div>`;
+ document.body.appendChild(d);
+ {const cv2=d.querySelector('#wspC'),g=cv2.getContext('2d');let t0=performance.now();
+  const iv=setInterval(()=>{if(!document.body.contains(cv2)){clearInterval(iv);return}
+   const t=(performance.now()-t0)/1000;g.clearRect(0,0,520,130);const cxp=260,cyp=68;
+   // rays
+   g.save();g.translate(cxp,cyp);g.globalCompositeOperation='lighter';
+   for(let i=0;i<9;i++){const a=t*.12+i*.698;const L=46+Math.sin(t*.9+i)*14;g.strokeStyle=`rgba(180,140,242,${.10+Math.sin(t+i)*.05})`;g.lineWidth=7;g.beginPath();g.moveTo(Math.cos(a)*16,Math.sin(a)*16);g.lineTo(Math.cos(a)*L,Math.sin(a)*L*.62);g.stroke()}
+   // core
+   const pu=1+Math.sin(t*1.6)*.1;const gr=g.createRadialGradient(0,0,0,0,0,40*pu);gr.addColorStop(0,'#fff');gr.addColorStop(.25,'#e8dcff');gr.addColorStop(.55,'rgba(180,140,242,.7)');gr.addColorStop(1,'transparent');g.fillStyle=gr;g.beginPath();g.arc(0,0,40*pu,0,6.28);g.fill();
+   // in-falling motes
+   for(let i=0;i<26;i++){const ph=(t*.16+i*.383)%1;const a=i*2.399+t*.05;const r=(1-ph)*230+12;const mx=Math.cos(a)*r,my=Math.sin(a)*r*.42;g.fillStyle=`rgba(220,205,255,${ph*.85})`;g.fillRect(mx-1,my-1,2,2)}
+   g.restore()},50)}
+ d.querySelector('#introGo').onclick=()=>{d.remove();if(!replay&&!G._launched)launch()}}
 window.showIntro=showIntro;
 $('bQuick').onclick=()=>{CREW.forEach(c=>picks[c.role]=0);drawCrew();showIntro(false)};$('bStart').onclick=()=>showIntro(false);$('bHow').onclick=()=>show('pHow');
 {const bh=$('bHow');const br=document.createElement('button');br.id='bStory';br.textContent='⟲ Replay briefing';bh.after(br);br.onclick=()=>showIntro(true)}
