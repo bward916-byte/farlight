@@ -134,7 +134,7 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
  <div class="panel" id="pShip"><div class="card" id="shipCard"></div></div>
  <div class="panel" id="pStation"><div class="card" id="stCard"></div></div>
  <div class="panel" id="pEnd"><div class="card"><div class="eyebrow">Survey complete</div><h1>HEARTH — CONSUMED</h1><p id="endTxt" style="margin-top:10px"></p><button class="go" onclick="closePanel()">Keep flying</button></div></div>
- <div class="panel" id="pDead"><div class="card"><h1 style="color:var(--rose)">LOST</h1><p id="deadTxt"></p><button class="go" onclick="location.reload()">New survey</button></div></div>
+ <div class="panel" id="pDead"><div class="card"><h1 style="color:var(--rose)">HULL LOST</h1><p id="deadTxt"></p><p id="recTxt" style="color:var(--dim);font-size:11px"></p><button class="go" id="recBtn">⛴ RESUME — RECOVERED AT HEARTH</button><button onclick="if(confirm('Erase this survey and start over?')){try{localStorage.removeItem('farlight')}catch(e){};location.reload()}" style="margin-left:8px">Start a new survey</button></div></div>
 </div>
 <div id="rot"><p>Rotate to landscape to fly.</p></div>
 <script>
@@ -357,7 +357,18 @@ const CREWREVIVE={Captain:()=>{G.dmg/=.85},Science:()=>{G.sciB/=.85;G.lifeB/=.85
 function killCrew(reason){let alive=Object.keys(SKILLS).map(k=>SKILLS[k].who).filter(w=>G.crewM&&G.crewM[w]&&!G.crewM[w].dead);if(!alive.length)return false;if(alive.includes('Medic')&&Math.random()<.4){msg(`${G.crew.Medic} drags them clear — bleeding, breathing. The Medic earned the berth today.`,7);gainXp('xeno',6);return false}const who=alive[Math.random()*alive.length|0];const where=P&&P.p?` Lost at ${P.p.name}.`:(S&&S.p?` Lost at ${S.p.name}.`:' Lost in open space.');G.crewM[who].dead=1;G.crewM[who].cause=reason;G.logs=G.logs||[];G.logs.push(`✝ ${G.crew[who]}, ${who}. ${reason}${where} Flown ${Math.round(G.t/60)} minutes with the survey.`);(CREWDEBUFF[who]||(()=>{}))();snd('boom');shakeIt(8);
  msg(`✝ ${G.crew[who]} — ${who} — is dead. ${reason} The crew goes quiet.`,9);
  setTimeout(()=>msg(`${who} duties degrade: performance penalty until a recruit signs on at Hearth.`,6),4000);save();return true}
-function die(t){if(demoOn){G.hull=G.maxHull;return}if(G.mode==='dead')return;stopHum();G.mode='dead';try{localStorage.removeItem('farlight')}catch(e){}$('deadTxt').textContent=t+` Credits: ${G.credits}. Artifacts: ${G.arts.length}. Kills: ${G.kills}.`;show('pDead')}
+function die(t){if(demoOn){G.hull=G.maxHull;return}if(G.mode==='dead')return;stopHum();G.mode='dead';
+ const fee=Math.max(100,Math.round(G.credits*.15));const cargoLost=G.hold>0;
+ $('deadTxt').textContent=t;
+ $('recTxt').textContent=`An Authority salvage tug answers the beacon. Recovery fee ${fee}¢${cargoLost?' · all cargo lost to the void':''} · hull patched to half.`;
+ $('recBtn').onclick=()=>{
+  if(G.credits>=fee)G.credits-=fee;else{G.debt=(G.debt||0)+(fee-G.credits);G.credits=0}
+  G.cargo={};G.hold=0;G.hull=Math.max(1,Math.round(G.maxHull*.5));G.sh=0;G.fuel=Math.max(G.fuel,Math.round(G.fuelMax*.5));
+  G.enemies=[];G.bullets=[];G.ebullets=[];G.fx=[];G.route=null;G._ponr=0;P=null;S=null;TERR=null;
+  const st=homeSys().st||{x:0,y:0};G.ship.x=(st.x||0)+70;G.ship.y=(st.y||0);G.ship.vx=G.ship.vy=0;G.cam.x=G.ship.x;G.cam.y=G.ship.y;
+  if(Math.random()<.25)killCrew('Did not make it to the recovery pod.');
+  G.mode='space';show(null);save();msg('The tug drops you at Hearth with half a hull and a lighter ledger. The survey continues.',7);snd('hail');startHum()};
+ show('pDead');save()}
 function pressB(){if(TR)return;if(G.mode==='space'){if(G.nearPlanet)openOrbit(G.nearPlanet);else if(G.nearSt)openStation();else if(G.nearDer)boardDerelict();else if((G.shipType||'surveyor')==='dart'){const now=performance.now();if(G._bTap&&now-G._bTap<340&&(!G.dashCd||G.dashCd<=0)){G.dashCd=2;const s2=G.ship;s2.vx+=Math.cos(s2.a)*420;s2.vy+=Math.sin(s2.a)*420;G.trail=G.trail||[];snd('jam');shakeIt(3);for(let i=0;i<8;i++)G.fx.push({x:s2.x-Math.cos(s2.a)*12,y:s2.y-Math.sin(s2.a)*12,vx:-Math.cos(s2.a)*R(60,140)+R(-30,30),vy:-Math.sin(s2.a)*R(60,140)+R(-30,30),l:R(.2,.5),c:'#7ef0ff',r:2});msg('Dash.',1)}G._bTap=now}}else if(G.mode==='rover')roverAction();else if(G.mode==='surf')tryExit();else closePanel()}
 function closePanel(){if(G.mode==='end'){G.mode='rover';show(null);return}if(G.mode==='orbit'||G.mode==='station'||G.mode==='map'||G.mode==='hail')G.mode='space';else if(G.mode==='ship')G.mode=G.prev;else return;show(null)}
 
