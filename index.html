@@ -509,7 +509,7 @@ function die(t){if(demoOn){G.hull=G.maxHull;return}if(G.mode==='dead')return;sto
   if(G.credits>=fee)G.credits-=fee;else{G.debt=(G.debt||0)+(fee-G.credits);G.credits=0}
   if(!G._recNearH){G.cargo={};G.hold=0}G.hull=Math.max(1,Math.round(G.maxHull*.5));G.sh=0;G.fuel=Math.max(G.fuel,Math.round(G.fuelMax*.5));
   G.enemies=[];G.bullets=[];G.ebullets=[];G.fx=[];G.route=null;G._ponr=0;P=null;S=null;TERR=null;
-  const st=homeSys().st||{x:0,y:0};G.ship.x=(st.x||0)+70;G.ship.y=(st.y||0);G.ship.vx=G.ship.vy=0;G.cam.x=G.ship.x;G.cam.y=G.ship.y;
+  const st=homeSys().station||{x:0,y:-620};G.ship.x=st.x+90;G.ship.y=st.y;G.ship.vx=G.ship.vy=0;G.cam.x=G.ship.x;G.cam.y=G.ship.y;
   if(Math.random()<.25){const before9=Object.keys(SKILLS).map(k9=>SKILLS[k9].who).filter(w9=>G.crewM[w9]&&!G.crewM[w9].dead);killCrew('Did not make it to the recovery pod.');const after9=Object.keys(SKILLS).map(k9=>SKILLS[k9].who).filter(w9=>G.crewM[w9]&&!G.crewM[w9].dead);const lost9=before9.find(w9=>!after9.includes(w9));if(lost9)setTimeout(()=>msg(`The tug crew is quiet about it: ${G.crew[lost9]} — your ${lost9} — did not make it to the pod.`,8),2500)}
   G.mode='space';show(null);save();msg(G.align<=-30?'The Reaver tug shoves you loose at Hearth\'s edge. "Professional courtesy. Do not make it a habit."':'The tug drops you at Hearth with half a hull and a lighter ledger. The survey continues.',7);snd('hail');startHum()};
  show('pDead');save()}
