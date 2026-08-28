@@ -111,7 +111,7 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
 @media (orientation:portrait) and (max-width:599px){#rot{display:flex}}
 body.allowPortrait #rot{display:none!important}
 .tcard{overflow-y:auto}
-@media (orientation:portrait){.title{grid-template-columns:1fr!important;overflow-y:auto}.tcard{height:auto;max-height:calc(var(--vhpx,100vh)*.94)}}
+@media (orientation:portrait){.title{display:flex!important;flex-direction:column;height:auto;gap:14px;overflow:visible}.title>div{min-height:0;height:auto!important}.tcard{height:auto;max-height:calc(var(--vhpx,100vh)*.94);overflow-y:auto}}
 
 /* ===== TYPE SYSTEM OVERHAUL ===== */
 .card{font-size:11px;line-height:1.5}
