@@ -108,7 +108,8 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
 .pill{display:inline-block;border:1px solid #2b3044;padding:2px 8px;margin:2px 4px 2px 0;font-size:11px;color:#bdb8a8}
 .lore{border-left:2px solid var(--violet);padding:6px 10px;margin:8px 0;font-size:11px;color:#bdb8a8;background:rgba(180,140,242,.05)}
 #rot{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:var(--ink);z-index:9;text-align:center;padding:30px}
-@media (orientation:portrait){#rot{display:flex}}
+@media (orientation:portrait) and (max-width:599px){#rot{display:flex}}
+body.allowPortrait #rot{display:none!important}
 
 /* ===== TYPE SYSTEM OVERHAUL ===== */
 .card{font-size:11px;line-height:1.5}
@@ -156,7 +157,7 @@ button:active{transform:translateY(1px);filter:brightness(1.2)}
  <div class="panel" id="pEnd"><div class="card"><div class="eyebrow">Survey complete</div><h1>HEARTH — CONSUMED</h1><p id="endTxt" style="margin-top:10px"></p><button class="go" onclick="closePanel()">Keep flying</button></div></div>
  <div class="panel" id="pDead"><div class="card"><h1 style="color:var(--rose)">HULL LOST</h1><p id="deadTxt" style="font-style:italic;color:var(--bone)"></p><p id="deadStats" style="font-size:10px;color:var(--dim);letter-spacing:.08em"></p><p id="recTxt" style="color:var(--dim);font-size:11px"></p><canvas id="deadTown" width="300" height="46" style="width:260px;height:40px;display:block;margin:4px auto 8px;border:1px solid #2b3044;opacity:.9"></canvas><button class="go" id="recBtn">⛴ RESUME — RECOVERED AT HEARTH</button><button onclick="if(confirm('Erase this survey and start over?')){try{localStorage.removeItem('farlight')}catch(e){};location.reload()}" style="margin-left:8px">Start a new survey</button></div></div>
 </div>
-<div id="rot"><p>Rotate to landscape to fly.</p></div>
+<div id="rot"><div><p>Rotate to landscape to fly.</p><p style="font-size:10px;color:var(--dim);margin:8px 0 12px">Or play tall — everything works, the sky is just narrower.</p><button onclick="document.body.classList.add('allowPortrait')">▶ PLAY IN PORTRAIT</button></div></div>
 <script>
 'use strict';
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
