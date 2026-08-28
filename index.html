@@ -581,8 +581,36 @@ function openDistress(){G.mode='hail';snd('hail');const need=Math.round(14+Math.
  if(window.INTIV)clearInterval(window.INTIV);window.INTIV=setInterval(()=>{if(G.mode!=='hail'||!document.body.contains(cv2)){clearInterval(window.INTIV);window.INTIV=null;return}draw()},50);draw()})();
  wireChips(c);show('pHail');c.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const k=b.dataset.d;if(k==='give'){G.fuel-=need;G.rep[race]+=2;alignAdj(4);gainXp('comms',14);msg(`Fuel transferred. ${RACES[race].n} standing +2 (${G.rep[race]}). The dark remembers kindness.`,5);snd('lvl')}else{msg('You leave the beacon behind. The dark remembers that too.',4);G.rep[race]=Math.max(-9,G.rep[race]-0)}closePanel();G.mode='space'})}
 function openIntercept(e){G.mode='hail';G.intCd=95;snd('hail');const dr=e.kind==='dread';const n=G.enemies.filter(x=>x.hostile&&(!x.boss||x.boss==='dread')).length;let pay=dr?Math.round(1500+cargoVal()+G.credits*.4):Math.round(80+Math.hypot(G.ship.x,G.ship.y)/15+cargoVal()*.25);if(G.posture==='defiant')pay=Math.round(pay*1.3);if(G.posture==='deferent')pay=Math.round(pay*.75);let bl=dr?clamp(skillLv('comms')*.03,0,.2):clamp((G.rep.kessen<=-5?.1:.25)+skillLv('comms')*.11+G.bluffB,0,.92);if(G.posture==='defiant')bl=clamp(bl+.15,0,.95);logHail('kessen',dr?'Reaver Prime intercept':'Reaver intercept');
- const c=$('hailCard');c.innerHTML=`<div class="eyebrow">Intercept · <span style="color:#e86b8a">Kessen Reavers</span> · ${n} ship${n>1?'s':''}</div><canvas id="intVis" width="760" height="120" style="width:100%;height:110px;border:1px solid #3a1a22;background:#05060c;margin:6px 0"></canvas><p style="margin-top:8px;color:#e86b8a">${(()=>{const _r2=0})()||''}${shipChip(e)}${(()=>{const _r=G.rep.kessen;G.rep.kessen=Math.min(_r,-3);const ch=raceChip('kessen');G.rep.kessen=_r;return ch})()}${dr?'"<b>Reaver Prime.</b> You have nothing we cannot take. Decide how much of you is left afterward."':G.rep.kessen<=-5?'"No talk this time. The bounty on you doubled. Hold still."':'"Surveyor. Cut engines. Cargo or hull."'}</p>${dr?'<p style="color:var(--rose);font-size:11px">Dreadnought-class. Faster than you, seven-gun broadsides, shielded. Bluffs almost never work. Jam and run is your best chance — it will still chase.</p>':''}${crewChip('Comms')}<p style="font-size:11px;color:var(--dim)">Comms ${skillLv('comms')} · bluff ${Math.round(bl*100)}%</p>
- ${postureRow()}<button data-i="scan" style="margin-bottom:2px" ${e._scanned?'disabled':''}>◉ SCAN VESSEL — gauge the danger</button><button class="go" data-i="bluff">◇ BLUFF · Authority escort</button><button data-i="pay" ${G.credits<pay?'disabled':''}>Pay them off · ${pay}¢</button><button data-i="jam">∿ JAM & RUN · ${Math.round(G.jamB*4)}s</button><button data-i="fight">⚔ OPEN FIRE</button>`;
+ const c=$('hailCard');const quote=dr?'\"<b>Reaver Prime.</b> You have nothing we cannot take. Decide how much of you is left afterward.\"':G.rep.kessen<=-5?'\"No talk this time. The bounty on you doubled. Hold still.\"':'\"Surveyor. Cut engines. Cargo or hull.\"';
+ const cm=G.crewM&&G.crewM['Comms'];
+ c.innerHTML=`<div class="eyebrow">Intercept · <span style="color:#e86b8a">Kessen Reavers</span> · ${n} ship${n>1?'s':''}</div>
+ <canvas id="intVis" width="760" height="120" style="width:100%;height:96px;border:1px solid #3a1a22;background:#05060c;margin:6px 0"></canvas>
+ <div style="display:flex;gap:12px;align-items:flex-start;border:1px solid #3a1a22;background:rgba(232,107,138,.04);padding:10px">
+  <div style="flex:0 0 auto;text-align:center;width:96px">
+   <canvas class="bigpt" data-r="kessen" width="88" height="88" style="width:88px;height:88px;border:2px solid #e86b8a;display:block;margin:0 auto"></canvas>
+   <div style="font-size:10px;color:#e86b8a;letter-spacing:.08em;margin-top:4px">${dr?'REAVER PRIME':'REAVER CAPTAIN'}</div>
+   <div style="font-size:10px;color:var(--dim)">${e.kind.toUpperCase()}${e.shield?' · ⛨ SHIELDED':''}</div>
+  </div>
+  <div style="flex:1;min-width:0">
+   <p style="color:#e86b8a;margin:0 0 6px">${quote}</p>
+   ${dr?'<p style="color:var(--rose);margin:0 0 6px;font-size:10px">Dreadnought-class — faster than you, seven-gun broadsides, shielded. Bluffs almost never work; jam and run, it will still chase.</p>':''}
+   <div id="intIntel" style="font-size:10px;color:var(--dim)">◉ Vessel unscanned — scan to gauge the danger.</div>
+  </div>
+ </div>
+ <div style="display:flex;gap:10px;align-items:center;border:1px solid #23283a;padding:8px 10px;margin:8px 0">
+  ${cm?`<canvas class="pt" data-s="${cm.seed}" width="44" height="44" style="width:44px;height:44px;border:1px solid #2b3044"></canvas>`:''}
+  <div style="flex:1;font-size:10px;color:var(--dim)"><b style="color:var(--bone)">${cm?G.crew['Comms']:'No comms officer'}</b> on the channel · Comms ${skillLv('comms')} · bluff chance <b style="color:var(--teal)">${Math.round(bl*100)}%</b></div>
+ </div>
+ ${postureRow()}
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+  <button data-i="scan" style="margin:0" ${e._scanned?'disabled':''}>◉ SCAN VESSEL<br><span style="font-size:10px;color:var(--dim)">hull · guns · verdict</span></button>
+  <button class="go" data-i="bluff" style="margin:0">◇ BLUFF<br><span style="font-size:10px;color:rgba(10,10,10,.7)">fake an Authority escort · ${Math.round(bl*100)}%</span></button>
+  <button data-i="pay" style="margin:0" ${G.credits<pay?'disabled':''}>⚖ PAY THEM OFF<br><span style="font-size:10px;color:var(--dim)">${pay}¢ — they leave</span></button>
+  <button data-i="jam" style="margin:0">∿ JAM &amp; RUN<br><span style="font-size:10px;color:var(--dim)">${Math.round(G.jamB*4)}s head start</span></button>
+  <button data-i="fight" style="margin:0;grid-column:1/3">⚔ OPEN FIRE<br><span style="font-size:10px;color:var(--dim)">no more talking</span></button>
+ </div>`;
+ c.querySelectorAll('.bigpt').forEach(cv3=>{try{cv3.getContext('2d').drawImage(racePortrait('kessen',88,true),0,0)}catch(e2){}});
+ c.querySelectorAll('.pt').forEach(cv3=>{try{if(cm)cv3.getContext('2d').drawImage(portrait(cm,44),0,0)}catch(e2){}});
  (function(){const cv2=$('intVis');if(!cv2)return;const g=cv2.getContext('2d');const dd=Math.round(dist(e,G.ship));const eScale=e.kind==='dread'?1.5:e.kind==='gunship'?1.1:.95;
  const draw=()=>{g.clearRect(0,0,760,120);
   // drifting stars
@@ -605,7 +633,7 @@ function openIntercept(e){G.mode='hail';G.intCd=95;snd('hail');const dr=e.kind==
   if(!peel&&Math.sin(G.t*6)>0){g.fillStyle='rgba(255,42,77,.8)';g.font='11px monospace';g.fillText('⚠ WEAPONS LOCK',380,20)}
   const IS=window.INTSCAN;if(IS){g.font='9px monospace';g.textAlign='left';g.fillStyle='#8fa0ff';g.fillText(`HULL ${IS.hull} · SHIELD ${IS.shield}${IS.dps!=='?'?` · GUNS ${IS.dps}/s`:''}`,540,34);g.fillStyle=IS.verdict[1];g.font='bold 10px monospace';g.textAlign='center';g.fillText(IS.verdict[0],380,110);if(Math.sin(G.t*4)>0){g.strokeStyle='#8fa0ff';g.strokeRect(600,44,130,34)}}};
  window.INTPEEL=0;window.INTSCAN=e._intel||null;if(window.INTIV)clearInterval(window.INTIV);window.INTIV=setInterval(()=>{if((G.mode!=='hail'&&!window.INTPEEL)||!document.body.contains(cv2)){clearInterval(window.INTIV);window.INTIV=null;return}draw()},50);draw()})();
- wirePosture(c,()=>openIntercept(e));wireChips(c);show('pHail');c.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const k=b.dataset.i;if(k==='scan'){window.INTSCAN=e._intel=shipIntel(e);e._scanned=1;gainXp('science',5);snd('ping');b.disabled=true;return}
+ wirePosture(c,()=>openIntercept(e));wireChips(c);show('pHail');c.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>{const k=b.dataset.i;if(k==='scan'){const IS=window.INTSCAN=e._intel=shipIntel(e);e._scanned=1;gainXp('science',5);snd('ping');b.disabled=true;const ii=document.getElementById('intIntel');if(ii){ii.style.color='var(--bone)';ii.innerHTML=`<span style="color:#8fa0ff">◉ SCAN</span> · hull ${IS.hull} · shield ${IS.shield}${IS.dps!=='?'?` · guns ${IS.dps}/s`:''} · <b style="color:${IS.verdict[1]}">${IS.verdict[0]}</b>${IS.sci<1?' · <span style="color:var(--dim)">train Science for exact figures</span>':''}`}return}
   if(k==='bluff'){if(Math.random()<bl){window.INTPEEL=G.t;setTimeout(()=>{window.INTPEEL=0},1200);for(const x of G.enemies)if(x.hostile&&(!x.boss||x.boss==='dread'))x.hp=-1;gainXp('comms',18);msg(`${G.crew.Comms}: "They bought it. They're peeling off."`,4)}else{gainXp('comms',5);msg('They laugh. Guns hot.',3);for(const x of G.enemies)x.ct=0}}
   if(k==='pay'){G.credits-=pay;for(const x of G.enemies)if(x.hostile&&(!x.boss||x.boss==='dread'))x.hp=-1;if(dr){G.cargo={};G.hold=0;msg('They strip the holds too. Reaver Prime leaves you breathing.',5)}G.rep.kessen+=1;gainXp('comms',6);msg('Paid. The Kessen take the credits and go.',3)}
   if(k==='jam'){G.burst=4*G.jamB;for(const x of G.enemies)x.ct=(x.kind==='dread'?1.2:3)*G.jamB;gainXp('comms',8);gainXp('piloting',6);msg('Jamming. Drive overcharged — run!',3);snd('laser')}
