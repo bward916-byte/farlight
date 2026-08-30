@@ -312,8 +312,8 @@ const RARN=['common','uncommon','rare','legendary'];const LIFE0=[{n:'Lichen mat'
 const ARTI=['Rusted beacon','Sealed cylinder','Fractured lens','Humming idol','Bone chart','Cold engine','The Orrery','The Last Letter'];
 const LORE=['A navigation beacon, pre-Authority. It still repeats one word in an old code: HOME. Someone pointed it back toward Hearth and left.','The cylinder holds soil. Hearth soil — the isotopes match. A colony ship seeded this world centuries before your Authority existed.','A lens ground for eyes that see further into red than yours. Whoever made it watched the sky for something coming.','The idol hums at 7.83 Hz. Dr. Bekele says that is Hearth\'s own resonance. They were trying to remember a sound.','A star chart etched on bone. Every system you have visited is marked. The ones you haven\'t are marked too, with a glyph the crew reads as "taken".','An engine run cold for a thousand years. Its fuel line points at the galactic rim. It was leaving, not arriving.','An orrery of a system that does not exist on your charts. At its centre, a star labelled in your own alphabet: HEARTH — CONSUMED.','The last letter. Not to you — but it knows your name. "Come back quietly. Do not let them follow. The dark keeps what it finds."'];
 const DISTMSG=[[1400,'Navigator: "Past the charted line. Nobody logs out here."'],[2800,'Science: "Spectra are wrong. These stars are older than Hearth."'],[4400,'Medic: "The life signs are… listening."'],[6200,'Captain: "Something is keeping pace with us. Stay sharp."'],[8200,'Engineer: "Hull\'s singing. The metal remembers this place."']];
-const RACES={veil:{n:'Veil Concord',c:'#b48cf2',ship:'veil',greet:'"Survey vessel. You are far from your Hearth. We remember Hearth. We remember what it cost."',warm:'"The courteous surveyor returns. Our holds are open to you."',cold:'"You have spent our patience. Speak carefully."',lore:'The Veil trade in memory. They claim your ancestors sold them the coordinates of Hearth for passage through the dark.'},
- kessen:{n:'Kessen Reavers',c:'#e86b8a',ship:'raider',greet:'"Cargo or hull, surveyor. Choose fast."',warm:'"Hm. The one who pays. Fly on, then."',cold:'"You. There is a price on that hull, and we mean to collect it slowly."',lore:'The Kessen were colonists once. The ships they fly are the same hulls that left Hearth, welded over a hundred times.'},
+const RACES={veil:{n:'Veil Concord',c:'#b48cf2',ship:'veil',greet:'"Freeholder vessel. You are far from your Hearth. We remember Hearth. We remember what it cost."',warm:'"The courteous surveyor returns. Our holds are open to you."',cold:'"You have spent our patience. Speak carefully."',lore:'The Veil trade in memory. They claim your ancestors sold them the coordinates of Hearth for passage through the dark.'},
+ kessen:{n:'Kessen Reavers',c:'#e86b8a',ship:'raider',greet:'"Cargo or hull, Freeholder. Choose fast."',warm:'"Hm. The one who pays. Fly on, then."',cold:'"You. There is a price on that hull, and we mean to collect it slowly."',lore:'The Kessen were colonists once. The ships they fly are the same hulls that left Hearth, welded over a hundred times.'},
  umbra:{n:'The Umbra',c:'#8fa0ff',ship:'watcher',greet:'"…listening… you carry a sound we lost…"',warm:'"…the sound is nearer when you are… stay…"',cold:'"…discord… you have made yourself noise…"',lore:'The Umbra do not speak so much as resonate at 7.83 Hz. Whatever Hearth is, they were there before it had a name.'}};
 function raceAt(x,y){const a=Math.atan2(y,x);const d=Math.hypot(x,y);if(d>5200&&Math.abs(a)>2.1)return 'umbra';return a>-.5&&a<1.6?'veil':'kessen'}
 const SITES={vault:{n:'The Vault',c:'#c9b0ff'},ruin:{n:'Ruins',c:'#b48cf2'},wreck:{n:'Wreck',c:'#f2b441'},cave:{n:'Cave',c:'#4fd6c4'},colony:{n:'Dead colony',c:'#e86b8a'},bones:{n:'Bone field',c:'#c9c2b1'},camp:{n:'Abandoned camp',c:'#8fa0ff'}};
@@ -538,22 +538,110 @@ function pressB(){if(TR)return;if(G.mode==='dock'){G._fromDock=1;openStationNow(
 function closePanel(){if(G.mode==='end'){G.mode='rover';show(null);return}if(G.mode==='station'&&G._fromDock){G._fromDock=0;G.mode='dock';show(null);return}if(G.mode==='orbit'||G.mode==='station'||G.mode==='map'||G.mode==='hail')G.mode='space';else if(G.mode==='ship')G.mode=G.prev;else return;show(null)}
 
 // ---------- hails ----------
-const RPORT={};function racePortrait(race,size=48,angry=false){const key=race+'_'+size+(angry?'!':'');if(RPORT[key])return RPORT[key];const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');const S=size/48;g.scale(S,S);
- const bg=g.createLinearGradient(0,0,0,48);bg.addColorStop(0,race==='veil'?'#1c1030':race==='umbra'?'#0a0e22':'#2a0d10');bg.addColorStop(1,'#07080f');g.fillStyle=bg;g.fillRect(0,0,48,48);
- if(race==='veil'){g.fillStyle='#2a1f40';g.beginPath();g.moveTo(6,48);g.quadraticCurveTo(10,34,24,33);g.quadraticCurveTo(38,34,42,48);g.fill();g.fillStyle='#b48cf2';g.beginPath();g.ellipse(24,17,8,15,0,0,6.28);g.fill();g.fillStyle='rgba(0,0,0,.75)';g.beginPath();g.ellipse(21,18,2.5,5,.2,0,6.28);g.ellipse(27,18,2.5,5,-.2,0,6.28);g.fill();g.fillStyle='rgba(255,255,255,.3)';g.fillRect(22,4,4,1)}
- else if(race==='kessen'){g.fillStyle='#3a1215';g.beginPath();g.moveTo(4,48);g.quadraticCurveTo(8,32,24,31);g.quadraticCurveTo(40,32,44,48);g.fill();g.fillStyle='#c98a6a';g.beginPath();g.ellipse(24,19,9,11,0,0,6.28);g.fill();g.strokeStyle='#e86b8a';g.lineWidth=1.5;g.beginPath();g.moveTo(18,10);g.lineTo(27,24);g.stroke();g.fillStyle='#111';g.fillRect(20,18,2,2);g.fillStyle='#e86b8a';g.fillRect(26,18,3,2);g.fillStyle='#2a2f45';g.beginPath();g.ellipse(24,10,9.5,4,0,3.14,0);g.fill()}
- else{g.fillStyle='#05040a';g.beginPath();g.ellipse(24,20,11,15,0,0,6.28);g.fill();g.fillStyle='#8fa0ff';g.beginPath();g.arc(24,18,3.5,0,6.28);g.fill();g.strokeStyle='rgba(143,160,255,.55)';for(let i=1;i<4;i++){g.beginPath();g.arc(24,18,3.5+i*4,0,6.28);g.stroke()}}
- if(angry){g.strokeStyle=race==='umbra'?'#ff6a8a':'#ff2a4d';g.lineWidth=2;if(race==='veil'){g.beginPath();g.moveTo(16,10);g.lineTo(22,14);g.moveTo(32,10);g.lineTo(26,14);g.stroke()}else if(race==='kessen'){g.beginPath();g.moveTo(16,14);g.lineTo(22,17);g.moveTo(32,14);g.lineTo(26,17);g.stroke();g.fillStyle='#ff2a4d';g.fillRect(19,25,10,2)}else{g.strokeStyle='rgba(255,80,110,.8)';for(let i=1;i<4;i++){g.beginPath();g.arc(24,18,3.5+i*4,-.6,.6);g.stroke()}}g.fillStyle='rgba(255,42,77,.08)';g.fillRect(0,0,48,48)}
- const vg=g.createRadialGradient(24,20,14,24,20,34);vg.addColorStop(0,'transparent');vg.addColorStop(1,'rgba(0,0,0,.55)');g.fillStyle=vg;g.fillRect(0,0,48,48);return RPORT[key]=c}
+const RPORT={};function racePortrait(race,size=48,angry=false){const key=race+'_'+size+(angry?'!':'');if(RPORT[key])return RPORT[key];const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');const S=size/96;g.scale(S,S);
+ const hue=race==='veil'?265:race==='umbra'?230:352;
+ // backdrop: deep nebula in faction hue + stars + vignette
+ const bg=g.createLinearGradient(0,0,0,96);bg.addColorStop(0,`hsl(${hue},45%,12%)`);bg.addColorStop(1,'#05060c');g.fillStyle=bg;g.fillRect(0,0,96,96);
+ const neb=g.createRadialGradient(30,26,4,30,26,60);neb.addColorStop(0,`hsla(${hue},70%,40%,.35)`);neb.addColorStop(1,'transparent');g.fillStyle=neb;g.fillRect(0,0,96,96);
+ for(let k2=0;k2<14;k2++){g.fillStyle=`rgba(225,232,248,${.25+hash(k2,7,hue)*2*.5})`;g.fillRect(hash(k2,1,hue)*2*96%96,hash(k2,2,hue)*2*96%96,1.3,1.3)}
+ if(race==='veil'){
+  // robe: high collar, silver clasp
+  g.fillStyle='#241a3e';g.beginPath();g.moveTo(8,96);g.quadraticCurveTo(14,66,48,63);g.quadraticCurveTo(82,66,88,96);g.fill();
+  const rr=g.createLinearGradient(0,63,0,96);rr.addColorStop(0,'rgba(180,140,242,.35)');rr.addColorStop(1,'transparent');g.fillStyle=rr;g.beginPath();g.moveTo(8,96);g.quadraticCurveTo(14,66,48,63);g.quadraticCurveTo(82,66,88,96);g.fill();
+  g.strokeStyle='#3b2b60';g.lineWidth=3;g.beginPath();g.moveTo(34,70);g.lineTo(48,84);g.lineTo(62,70);g.stroke();g.fillStyle='#cfd6ea';g.beginPath();g.arc(48,84,3,0,6.28);g.fill();
+  // elongated head with sheen
+  const hd=g.createRadialGradient(42,26,6,48,34,30);hd.addColorStop(0,'#dcc9ff');hd.addColorStop(.55,'#a986e8');hd.addColorStop(1,'#5b4392');g.fillStyle=hd;g.beginPath();g.ellipse(48,34,17,28,0,0,6.28);g.fill();
+  // brow lights
+  for(let d2=0;d2<3;d2++){g.fillStyle=`rgba(126,240,255,${.7-d2*.18})`;g.beginPath();g.arc(48,10+d2*5,1.4,0,6.28);g.fill()}
+  // obsidian almond eyes + star specks
+  const eye=(ex,tilt)=>{g.save();g.translate(ex,38);g.rotate(tilt);g.fillStyle='#0a0714';g.beginPath();g.ellipse(0,0,5.5,(angry?7:10),0,0,6.28);g.fill();const gl=g.createRadialGradient(0,-2,0,0,-2,7);gl.addColorStop(0,'rgba(180,140,242,.5)');gl.addColorStop(1,'transparent');g.fillStyle=gl;g.beginPath();g.ellipse(0,0,5.5,(angry?7:10),0,0,6.28);g.fill();g.fillStyle='#fff';g.fillRect(-1.6,-4,1.6,1.6);g.fillRect(1,.5,1,1);g.restore()};
+  eye(40,.22);eye(56,-.22);
+  if(angry){g.strokeStyle='#3c2a66';g.lineWidth=2.5;g.beginPath();g.moveTo(34,28);g.lineTo(45,32);g.moveTo(62,28);g.lineTo(51,32);g.stroke()}
+  // nose slits + mouth
+  g.strokeStyle='rgba(60,42,102,.9)';g.lineWidth=1.4;g.beginPath();g.moveTo(46,48);g.lineTo(46,51);g.moveTo(50,48);g.lineTo(50,51);g.stroke();
+  g.strokeStyle='#43306e';g.lineWidth=2;g.beginPath();if(angry){g.moveTo(43,58);g.lineTo(53,58)}else{g.moveTo(43,57);g.quadraticCurveTo(48,59,53,57)}g.stroke();
+ }else if(race==='kessen'){
+  // spiked pauldrons + chest
+  g.fillStyle='#33161c';g.beginPath();g.moveTo(4,96);g.quadraticCurveTo(10,64,48,62);g.quadraticCurveTo(86,64,92,96);g.fill();
+  g.fillStyle='#4b1f27';g.beginPath();g.moveTo(6,78);g.lineTo(20,60);g.lineTo(30,74);g.closePath();g.fill();g.beginPath();g.moveTo(90,78);g.lineTo(76,60);g.lineTo(66,74);g.closePath();g.fill();
+  g.strokeStyle='rgba(232,107,138,.5)';g.lineWidth=2;g.beginPath();g.moveTo(14,70);g.lineTo(24,66);g.moveTo(82,70);g.lineTo(72,66);g.stroke();
+  // broad jaw head with weathered shading
+  const hd=g.createRadialGradient(42,30,8,48,40,32);hd.addColorStop(0,'#d9986f');hd.addColorStop(.6,'#a5623f');hd.addColorStop(1,'#5e3122');g.fillStyle=hd;g.beginPath();g.moveTo(30,22);g.quadraticCurveTo(48,12,66,22);g.lineTo(67,46);g.quadraticCurveTo(62,60,48,62);g.quadraticCurveTo(34,60,29,46);g.closePath();g.fill();
+  // red head-wrap with tail
+  g.fillStyle='#c23548';g.beginPath();g.moveTo(28,24);g.quadraticCurveTo(48,10,68,24);g.lineTo(66,30);g.quadraticCurveTo(48,20,30,30);g.closePath();g.fill();g.beginPath();g.moveTo(66,26);g.quadraticCurveTo(76,32,72,44);g.lineTo(68,42);g.quadraticCurveTo(70,33,64,29);g.fill();
+  g.fillStyle='rgba(0,0,0,.25)';g.fillRect(30,29,36,3);
+  // heavy brow + shadowed amber eyes
+  g.fillStyle='rgba(46,20,14,.85)';g.fillRect(32,33,14,4);g.fillRect(50,33,14,4);
+  const eye=(ex)=>{g.fillStyle='#1c0d08';g.beginPath();g.ellipse(ex,40,4.5,(angry?2.2:3.2),0,0,6.28);g.fill();g.fillStyle='#ffb244';g.beginPath();g.arc(ex+(angry?1:0),40,1.5,0,6.28);g.fill();g.fillStyle='rgba(255,255,255,.7)';g.fillRect(ex-1,38.6,1,1)};
+  eye(39);eye(57);
+  if(angry){g.strokeStyle='#3a1710';g.lineWidth=2.4;g.beginPath();g.moveTo(33,31);g.lineTo(45,35);g.moveTo(63,31);g.lineTo(51,35);g.stroke()}
+  // scar across cheek
+  g.strokeStyle='#e2a08a';g.lineWidth=1.6;g.beginPath();g.moveTo(58,34);g.lineTo(52,52);g.stroke();g.lineWidth=.8;for(let t2=0;t2<3;t2++){g.beginPath();g.moveTo(56-t2*2,38+t2*4);g.lineTo(58-t2*2,39+t2*4);g.stroke()}
+  // nose + mouth/snarl + stubble
+  g.strokeStyle='#6b3a26';g.lineWidth=2;g.beginPath();g.moveTo(48,40);g.lineTo(46,48);g.lineTo(50,49);g.stroke();
+  if(angry){g.fillStyle='#2a0f0c';g.fillRect(40,53,16,4.5);g.fillStyle='#e8e0cf';for(let t2=0;t2<4;t2++)g.fillRect(41.5+t2*3.6,53,2.2,2);g.fillStyle='#e8c25c';g.fillRect(45.1,55.2,2.2,2)}
+  else{g.strokeStyle='#3f1d13';g.lineWidth=2.2;g.beginPath();g.moveTo(41,55);g.lineTo(55,55.5);g.stroke()}
+  g.fillStyle='rgba(30,14,10,.55)';for(let t2=0;t2<26;t2++){g.fillRect(34+hash(t2,3,9)*2*28%28,50+hash(t2,5,9)*2*11%11,1,1)}
+ }else{ // umbra — living smoke
+  for(let p2=0;p2<7;p2++){const px=48+Math.sin(p2*2.1)*10,py=40-p2*3+((p2%2)*6);const pr=26-p2*2.4;const sm=g.createRadialGradient(px,py,2,px,py,pr);sm.addColorStop(0,`rgba(${18+p2*6},${16+p2*4},${40+p2*8},.8)`);sm.addColorStop(1,'transparent');g.fillStyle=sm;g.beginPath();g.arc(px,py,pr,0,6.28);g.fill()}
+  // inner violet wisps
+  g.strokeStyle='rgba(140,120,255,.25)';g.lineWidth=1.4;for(let w2=0;w2<4;w2++){g.beginPath();g.moveTo(34+w2*8,64);g.quadraticCurveTo(30+w2*10,40,44+w2*4,20-w2*3);g.stroke()}
+  // ember eyes with slit pupils
+  const eye=(ex)=>{const fl=angry?1.5:1;const eg=g.createRadialGradient(ex,40,1,ex,40,10*fl);eg.addColorStop(0,angry?'#ff6a3c':'#ffb066');eg.addColorStop(.35,angry?'rgba(255,70,40,.8)':'rgba(255,150,80,.75)');eg.addColorStop(1,'transparent');g.fillStyle=eg;g.beginPath();g.arc(ex,40,10*fl,0,6.28);g.fill();g.fillStyle='#fff2d8';g.beginPath();g.ellipse(ex,40,1.6,3.6,0,0,6.28);g.fill();g.fillStyle='#1a0c06';g.fillRect(ex-.5,36.8,1,6.4)};
+  eye(39);eye(57);
+  // shard collar
+  g.fillStyle='#0c0e1e';for(let sh2=0;sh2<7;sh2++){const sx2=16+sh2*10;g.beginPath();g.moveTo(sx2,96);g.lineTo(sx2+5,70+((sh2%3)*6));g.lineTo(sx2+10,96);g.closePath();g.fill()}
+  g.strokeStyle='rgba(140,120,255,.3)';g.lineWidth=1;for(let sh2=0;sh2<7;sh2++){const sx2=16+sh2*10;g.beginPath();g.moveTo(sx2,96);g.lineTo(sx2+5,70+((sh2%3)*6));g.stroke()}
+ }
+ // vignette + faction rim light
+ const vg=g.createRadialGradient(48,44,26,48,48,68);vg.addColorStop(0,'transparent');vg.addColorStop(1,'rgba(3,4,9,.55)');g.fillStyle=vg;g.fillRect(0,0,96,96);
+ const rim=g.createLinearGradient(0,0,96,0);rim.addColorStop(0,`hsla(${hue},80%,60%,.18)`);rim.addColorStop(.5,'transparent');rim.addColorStop(1,`hsla(${hue},80%,60%,.12)`);g.fillStyle=rim;g.fillRect(0,0,96,96);
+ return RPORT[key]=c}
 function shipChip(e){return `<canvas class="sp2" data-k="${e.kind}" data-p="${e.ph||0}" width="54" height="36" style="width:54px;height:36px;border:1px solid #2b3044;vertical-align:middle;margin-right:6px;background:#060810"></canvas>`}
 function raceChip(race){const angry=G.rep[race]<=-3;return `<canvas class="rp" data-r="${race}" data-a="${angry?1:''}" width="40" height="40" style="width:40px;height:40px;border:1px solid ${angry?'#ff2a4d':'#2b3044'};vertical-align:middle;margin-right:8px"></canvas>`}
 function crewChip(role){const m=G.crewM&&G.crewM[role];if(!m)return '';return `<span style="display:inline-flex;align-items:center;gap:6px;margin-top:6px"><canvas class="pt" data-s="${m.seed}" width="28" height="28" style="width:28px;height:28px;border:1px solid #2b3044"></canvas><span style="font-size:11px;color:var(--dim)">${m.name} on the channel</span></span>`}
 function wireChips(c){c.querySelectorAll('canvas.sp2').forEach(cv2=>{const g2=cv2.getContext('2d');g2.clearRect(0,0,54,36);g2.save();g2.translate(27,18);g2.scale(.62,.62);const k=cv2.dataset.k;if(k==='watcher'){g2.strokeStyle='#8fa0ff';g2.fillStyle='#0d0f18';g2.beginPath();g2.arc(0,0,11,0,6.28);g2.fill();g2.stroke();g2.fillStyle='#8fa0ff';g2.beginPath();g2.arc(3,0,4,0,6.28);g2.fill()}else{const sc3=(k==='dread')?.62:(k==='flagship')?.8:1;g2.scale(sc3,sc3);g2.drawImage(enemyTex(k==='dread'?'dread':k,(+cv2.dataset.p*97|0)%3),-27,-27,54,54)}g2.restore()});c.querySelectorAll('canvas.rp').forEach(cv2=>cv2.getContext('2d').drawImage(racePortrait(cv2.dataset.r,48,!!cv2.dataset.a),0,0,40,40));c.querySelectorAll('canvas.pt').forEach(cv2=>{const m=[...CREW,...Object.values(ALT)].find(x=>x.seed==cv2.dataset.s);if(m)cv2.getContext('2d').drawImage(portrait(m,48),0,0,cv2.width,cv2.height)})}
 function logHail(race,line){G.hails.unshift({race,line,ly:Math.round(Math.hypot(G.ship.x,G.ship.y)/10)});if(G.hails.length>20)G.hails.length=20}
 function openHail(e){G.mode='hail';G.hailCd=25;G.ship.vx=G.ship.vy=0;snd('hail');const r=RACES[e.race],first=!G.met[e.race];G.met[e.race]=1;const cv_=cargoVal();const rp=G.rep[e.race];
- const line=rp>=3&&r.warm?r.warm:rp<=-3&&r.cold?r.cold:r.greet;logHail(e.race,line);const c=$('hailCard');c.innerHTML=`<div class="eyebrow">Incoming hail · <span style="color:${r.c}">${r.n}</span> · standing ${rp>0?'+':''}${rp}</div><p style="margin-top:8px;color:${r.c}">${raceChip(e.race)}${shipChip(e)}${line}</p>${first?`<div class="lore">${r.lore}</div>`:''}${crewChip('Comms')}
- ${postureRow()}<button class="go" data-h="greet">✉ GREET</button>${`<button data-h="trade" ${cv_?'':'disabled'}>${e.race==='veil'?`⇄ TRADE · ${Math.round(cv_*1.4)}¢`:e.race==='kessen'?`⇄ FENCE · ${Math.round(cv_*.7)}¢`:`⇄ RESONATE · ${Math.round(cv_*1.05)}¢`}</button>`}${e.race==='umbra'?`<button data-h="listen">◉ LISTEN</button>`:''}<button data-h="scan">◉ SCAN VESSEL</button>${e.race==='veil'&&!G.contract?`<button data-h="contract">Take a contract</button>`:''}${e.race==='veil'&&G.bounty?`<button data-h="bounty" ${G.credits<G.bounty?'disabled':''}>Buy off Kessen bounty · ${G.bounty}¢</button>`:''}${G.contract&&e.race==='veil'&&(G.cargo[G.contract.m]||{n:0}).n>=G.contract.n?`<button class="go" data-h="deliver">Deliver ${G.contract.n}× ${G.contract.m} · ${G.contract.pay}¢</button>`:''}<button data-h="fuel" ${G.credits<120?'disabled':''}>⛽ FUEL · 120¢</button>${e.race==='kessen'?`<button data-h="bribe" ${G.credits<Math.round((120+Math.hypot(G.ship.x,G.ship.y)/18)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))?'disabled':''}>⚖ BRIBE · ${Math.round((120+Math.hypot(G.ship.x,G.ship.y)/18)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))}¢</button>`:''}<button data-h="threat">⚔ THREATEN</button><button data-h="leave">✖ BREAK</button>`;
- wirePosture(c,()=>openHail(e));wireChips(c);show('pHail');c.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const k=b.dataset.h;if(k==='scan'){const IS=shipIntel(e);gainXp('science',5);snd('ping');b.outerHTML=`<p style="font-size:11px;border:1px solid #8fa0ff;padding:6px 8px"><span style="color:#8fa0ff">◉ SCAN</span> · hull ${IS.hull} · shield ${IS.shield}${IS.dps!=='?'?` · guns ${IS.dps}/s`:''} · <b style="color:${IS.verdict[1]}">${IS.verdict[0]}</b>${e.race==='veil'?` · seeking <b style="color:var(--amber)">${MIN[3+((e.ph*7|0)%3)].n}</b> (pays 1.6×)`:''}${IS.sci<1?' · train Science for exact figures':''}</p>`;return}
+ const line=rp>=3&&r.warm?r.warm:rp<=-3&&r.cold?r.cold:r.greet;logHail(e.race,line);const c=$('hailCard');
+ const title=e.race==='veil'?'VEIL ENVOY':e.race==='kessen'?'REAVER CAPTAIN':'THE UMBRA';
+ const cm=G.crewM&&G.crewM['Comms'];
+ const sub=(txt)=>`<br><span style="font-size:10px;color:var(--dim)">${txt}</span>`;
+ const subGo=(txt)=>`<br><span style="font-size:10px;color:rgba(10,10,10,.7)">${txt}</span>`;
+ c.innerHTML=`<div class="eyebrow">Incoming hail · <span style="color:${r.c}">${r.n}</span> · standing <b style="color:${rp>=3?'var(--teal)':rp<=-3?'var(--rose)':'var(--bone)'}">${rp>0?'+':''}${rp}</b></div>
+ <div style="display:flex;gap:12px;align-items:flex-start;border:1px solid ${r.c}33;background:${r.c}0a;padding:10px;margin-top:6px">
+  <div style="flex:0 0 auto;text-align:center;width:96px">
+   <canvas class="bigpt" width="88" height="88" style="width:88px;height:88px;border:2px solid ${r.c};display:block;margin:0 auto"></canvas>
+   <div style="font-size:10px;color:${r.c};letter-spacing:.08em;margin-top:4px">${title}</div>
+   <div style="font-size:10px;color:var(--dim)">${(SHIPS[r.ship]&&SHIPS[r.ship].n)||e.kind||''}</div>
+  </div>
+  <div style="flex:1;min-width:0">
+   <p style="color:${r.c};margin:0 0 6px">${line}</p>
+   ${first?`<p style="font-size:10px;color:var(--dim);margin:0 0 6px">${r.lore}</p>`:''}
+   <div id="hailIntel" style="font-size:10px;color:var(--dim)">◉ Vessel unscanned — scan to read hull, guns and intent.</div>
+  </div>
+ </div>
+ <div style="display:flex;gap:10px;align-items:center;border:1px solid #23283a;padding:8px 10px;margin:8px 0">
+  ${cm?`<canvas class="pt" data-s="${cm.seed}" width="44" height="44" style="width:44px;height:44px;border:1px solid #2b3044"></canvas>`:''}
+  <div style="flex:1;font-size:10px;color:var(--dim)"><b style="color:var(--bone)">${cm?G.crew['Comms']:'No comms officer'}</b> on the channel · Comms ${skillLv('comms')}</div>
+ </div>
+ ${postureRow()}
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+ <button class="go" data-h="greet" style="margin:0">✉ GREET${subGo('costs nothing · builds standing')}</button>
+ <button data-h="trade" style="margin:0" ${cv_?'':'disabled'}>${e.race==='veil'?`⇄ TRADE · ${Math.round(cv_*1.4)}¢`:e.race==='kessen'?`⇄ FENCE · ${Math.round(cv_*.7)}¢`:`⇄ RESONATE · ${Math.round(cv_*1.05)}¢`}${sub(e.race==='kessen'?'sell the hold, no questions — the ledger remembers':'sell your entire hold')}</button>
+ ${e.race==='umbra'?`<button data-h="listen" style="margin:0">◉ LISTEN${sub('let it speak — knowledge or dread')}</button>`:''}
+ <button data-h="scan" style="margin:0">◉ SCAN VESSEL${sub('hull · guns · verdict')}</button>
+ ${e.race==='veil'&&!G.contract?`<button data-h="contract" style="margin:0">◈ TAKE A CONTRACT${sub('haul minerals for Veil pay')}</button>`:''}
+ ${e.race==='veil'&&G.bounty?`<button data-h="bounty" style="margin:0" ${G.credits<G.bounty?'disabled':''}>⚖ BUY OFF BOUNTY · ${G.bounty}¢${sub('the Veil broker your Kessen mark away')}</button>`:''}
+ ${G.contract&&e.race==='veil'&&(G.cargo[G.contract.m]||{n:0}).n>=G.contract.n?`<button class="go" data-h="deliver" style="margin:0">◈ DELIVER ${G.contract.n}× ${G.contract.m} · ${G.contract.pay}¢${subGo('contract complete')}</button>`:''}
+ <button data-h="fuel" style="margin:0" ${G.credits<120?'disabled':''}>⛽ BUY FUEL · 120¢${sub('+40 to the tank')}</button>
+ ${e.race==='kessen'?`<button data-h="bribe" style="margin:0" ${G.credits<Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))?'disabled':''}>⚖ BRIBE · ${Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))}¢${sub('safe passage, this once')}</button>`:''}
+ <button data-h="threat" style="margin:0">⚔ THREATEN${sub('fear works — friendship dies')}</button>
+ <button data-h="leave" style="margin:0;grid-column:1/-1">✖ BREAK CHANNEL${sub('end the hail')}</button>
+ </div>`;
+ c.querySelectorAll('.bigpt').forEach(cv3=>{try{cv3.getContext('2d').drawImage(racePortrait(e.race,88,rp<=-3),0,0,cv3.width,cv3.height)}catch(e2){}});
+ c.querySelectorAll('.pt').forEach(cv3=>{try{if(cm)cv3.getContext('2d').drawImage(portrait(cm,44),0,0,cv3.width,cv3.height)}catch(e2){}});
+ wirePosture(c,()=>openHail(e));wireChips(c);show('pHail');c.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>{const k=b.dataset.h;if(k==='scan'){const IS=shipIntel(e);gainXp('science',5);snd('ping');b.disabled=true;const ii=document.getElementById('hailIntel');if(ii){ii.style.color='var(--bone)';ii.innerHTML=`<span style="color:#8fa0ff">◉ SCAN</span> · hull ${IS.hull} · shield ${IS.shield}${IS.dps!=='?'?` · guns ${IS.dps}/s`:''} · <b style="color:${IS.verdict[1]}">${IS.verdict[0]}</b>${e.race==='veil'?` · seeking <b style="color:var(--amber)">${MIN[3+((e.ph*7|0)%3)].n}</b> (pays 1.6×)`:''}${IS.sci<1?' · train Science for exact figures':''}`}return}
   if(k==='greet'){G.rep[e.race]+=1;gainXp('science',6);msg(e.race==='veil'?'Veil: "We will remember this courtesy."':e.race==='kessen'?'Kessen: "Hm. Not today, then."':'Umbra: "…heard…"')}
   if(k==='trade'){if(e.race==='kessen'){alignAdj(-3);G.sold=Math.max(0,(G.sold||0)-2)}G.credits+=payDebt(Math.round(cv_*(e.race==='veil'?1.4:e.race==='kessen'?(G.align<=-30?.85:.7):1.05)));if(e.race==='umbra')G.rep.umbra+=1;if(e.race==='kessen'&&Math.random()<.25){const fine=Math.round(cv_*.35+80);msg(`An Authority probe logged the fenced goods. Fine issued: ${fine}¢.`,5);charge(fine,'Contraband trading fine');snd('hit')}G.cargo={};G.hold=0;G.sold++;G.rep[e.race]+=1;msg('Cargo transferred. Credits received.')}
   if(k==='listen'){const um=G.crewM&&Object.values(G.crewM).some(m=>m.sp==='umbral');G.rep.umbra+=um?2:1;if(um)msg(`${G.crew.Comms} resonates back. The Umbra answer twice as warmly.`,3);gainXp('science',25);if(!G.orrery&&G.rep.umbra>=2&&G.arts.includes('The Orrery')){G.orrery=true;if(G.story<3){G.story=3;setTimeout(()=>{msg('Navigator: "The Consumed Hearth is charted. The story ends where light began — find the vault on Hearth Prime."',9);snd('hail')},2200)}G.log.push({n:'Coordinates',t:'The Umbra tone resolves into numbers. Dr. Bekele overlays them on the Orrery: a system far to galactic west, labelled in your own alphabet. Consumed Hearth is on the star map.'});msg('The Umbra have given you coordinates. Check the star map.',6)}if(!G.log.some(l=>l.n==='Umbra resonance')){G.log.push({n:'Umbra resonance',t:'A seven-second tone. Dr. Bekele matches it to the humming idol. The Umbra are not speaking to you — they are speaking to Hearth, through you.'});msg('Umbra resonance logged.',4)}}
