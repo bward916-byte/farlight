@@ -169,7 +169,7 @@ body.allowPortrait #rot{display:none!important}
 const cv=document.getElementById('c'),cx=cv.getContext('2d');
 let W,H,DPR;function resize(){DPR=Math.min(devicePixelRatio||1,2);const vv=window.visualViewport;W=Math.round(vv?vv.width:innerWidth);H=Math.round(vv?vv.height:innerHeight);cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';document.documentElement.style.setProperty('--vhpx',H+'px');cx.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();if((navigator.hardwareConcurrency||4)<=4)DPR=1;
 const $=id=>document.getElementById(id);
-function tabs(card){card.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{card.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));card.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id===b.dataset.t))})}
+function tabs(card){card.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{card.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));card.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.id===b.dataset.t));if(card.id==='stCard')setTimeout(ensureShopScene,20)})}
 function show(id){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));if(id)$(id).classList.add('on');$('ctl').classList.toggle('on',!id&&!demoOn)}
 function hash(x,y,s=0){let h=(x*374761393+y*668265263+s*982451653)|0;h=(h^(h>>13))*1274126177;h=h^(h>>16);return (h>>>0)/4294967296}
 const R=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>v<a?a:v>b?b:v,dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y),lerp=(a,b,t)=>a+(b-a)*t;
@@ -211,7 +211,7 @@ function updDock(dt){const ax=axis();D.vx+=(ax.x*150-D.vx)*dt*9;D.px=clamp(D.px+
  setBtns(c?(c.t==='air'?'⏏ UNDOCK':c.t==='door'?'ENTER':'YOUR SHIP'):'·','MENU',!!c);
  if(IN.a){IN.a=false;
   if(c&&c.t==='air'){leaveDock();return}
-  if(c&&c.t==='door'){G._fromDock=1;openStationNow();const b=document.querySelector(`[data-t=${c.d.sh[0]}]`);if(b)b.click();snd('ping')}
+  if(c&&c.t==='door'){G._fromDock=1;G._dockShop=c.d.sh[0];openStationNow();const b=document.querySelector(`[data-t=${c.d.sh[0]}]`);if(b)b.click();setTimeout(ensureShopScene,30);const tb=document.querySelector('#stCard .tabs')||document.querySelector('.panel.on .tabs');if(tb&&G._dockShop)tb.style.display='none';snd('ping')}
   if(c&&c.t==='ship'){msg('Your hull rests in the berth cradle — umbilicals humming, tanks topping. It will be ready when you are.',5)}}
 }
 function updCabin(dt){if(!P)return;P.tod=(P.tod+dt*.004)%1;setBtns('⛟ DISEMBARK','⬆ LAUNCH',1);
@@ -440,6 +440,43 @@ function itemIcon(id,size=40){const key=id+'_'+size;if(IICO[key])return IICO[key
  return IICO[key]=c}
 function blkGrid(w,h,col='#4fd6c4'){let out='<span style="display:inline-grid;grid-template-columns:repeat('+w+',7px);gap:1px;vertical-align:middle;margin-right:4px">';for(let i=0;i<w*h;i++)out+=`<span style="width:7px;height:7px;background:${col}44;border:1px solid ${col}"></span>`;out+='</span>';return out}
 function weaponsFit(){const m=MOUNTS[G.shipType||'surveyor']||MOUNTS.surveyor;const used={S:0,M:0,L:0};for(const k of G.weapons||[]){const sl=(WSLOT[k]||['S'])[0];used[sl]++}return {m,used}}
+function shopScene(id,cv){const g=cv.getContext('2d');const Wc=cv.width,Hc=cv.height;g.clearRect(0,0,Wc,Hc);
+ const bg=g.createLinearGradient(0,0,0,Hc);bg.addColorStop(0,'#0c0f1a');bg.addColorStop(1,'#060810');g.fillStyle=bg;g.fillRect(0,0,Wc,Hc);
+ // ceiling lamps
+ for(let lx=90;lx<Wc;lx+=190){const lg2=g.createRadialGradient(lx,8,2,lx,8,60);lg2.addColorStop(0,'rgba(255,224,160,.30)');lg2.addColorStop(1,'transparent');g.fillStyle=lg2;g.fillRect(lx-60,0,120,Hc);g.fillStyle='#f2b441';g.fillRect(lx-6,4,12,3)}
+ const tw=(x,y,c2)=>{g.fillStyle=c2;g.fillRect(x,y,2,2)};
+ if(id==='s1'){ // broker: crates, scale, ticker
+  for(let i=0;i<7;i++){const bx=40+i*100,bh2=22+((i*37)%26);g.fillStyle='#221c10';g.fillRect(bx,Hc-14-bh2,44,bh2);g.strokeStyle='#4a3f22';g.strokeRect(bx,Hc-14-bh2,44,bh2);g.strokeStyle='rgba(242,180,65,.35)';g.beginPath();g.moveTo(bx,Hc-14-bh2/2);g.lineTo(bx+44,Hc-14-bh2/2);g.stroke()}
+  g.strokeStyle='#c9c1aa';g.lineWidth=1.5;g.beginPath();g.moveTo(Wc-140,10);g.lineTo(Wc-140,30);g.moveTo(Wc-160,30);g.lineTo(Wc-120,30);g.stroke();g.beginPath();g.arc(Wc-155,36,6,0,3.14);g.arc(Wc-125,36,6,0,3.14);g.stroke();
+  g.fillStyle='#0a1a12';g.fillRect(30,10,190,26);g.strokeStyle='#4fd6c4';g.strokeRect(30,10,190,26);g.fillStyle='#4fd6c4';g.font='9px monospace';g.textAlign='left';g.fillText('Ti +40%  Os −20%  Ir —',38,26);tw(210,16,'#4fd6c4')}
+ else if(id==='s2'){ // gunsmith: wall rack
+  g.fillStyle='#141020';g.fillRect(20,12,Wc-40,Hc-30);g.strokeStyle='#2b2038';g.strokeRect(20,12,Wc-40,Hc-30);
+  for(let i=0;i<5;i++){const rx=60+i*140;g.strokeStyle='#3a3050';g.beginPath();g.moveTo(rx,20);g.lineTo(rx,Hc-24);g.stroke();
+   g.save();g.translate(rx+66,34+((i%2)*22));g.fillStyle='#cfd6ea';g.beginPath();g.moveTo(24,0);g.lineTo(6,-4);g.lineTo(-20,-3);g.lineTo(-20,3);g.lineTo(6,4);g.fill();g.fillStyle='#e86b8a';g.beginPath();g.moveTo(-20,-3);g.lineTo(-27,-6);g.lineTo(-25,0);g.lineTo(-27,6);g.lineTo(-20,3);g.fill();g.restore()}
+  g.strokeStyle='rgba(232,107,138,.85)';g.lineWidth=1.6;g.beginPath();g.arc(Wc-70,30,11,0,6.28);g.moveTo(Wc-86,30);g.lineTo(Wc-54,30);g.moveTo(Wc-70,14);g.lineTo(Wc-70,46);g.stroke()}
+ else if(id==='s3'){ // outfitter: hex module wall + bench sparks
+  for(let r2=0;r2<3;r2++)for(let q2=0;q2<9;q2++){const hx=70+q2*76+((r2%2)*38),hy=22+r2*24;g.strokeStyle=`rgba(180,140,242,${.25+hash(q2,r2,5)*2*.5})`;g.lineWidth=1.3;g.beginPath();for(let a6=0;a6<6;a6++){const th6=a6/6*6.283;const px6=hx+Math.cos(th6)*11,py6=hy+Math.sin(th6)*11;a6?g.lineTo(px6,py6):g.moveTo(px6,py6)}g.closePath();g.stroke();if(hash(q2,r2,9)*2<.3){g.fillStyle='rgba(126,240,255,.25)';g.fill()}}
+  g.fillStyle='#1a1e2e';g.fillRect(Wc-190,Hc-26,160,14);for(let sp2=0;sp2<4;sp2++)tw(Wc-160+Math.random()*100,Hc-30-Math.random()*8,'#ffd88a')}
+ else if(id==='s5'){ // jobs: notice board
+  g.fillStyle='#181410';g.fillRect(60,8,Wc-120,Hc-22);g.strokeStyle='#4a3f22';g.lineWidth=2;g.strokeRect(60,8,Wc-120,Hc-22);
+  const cols=['#f2b441','#4fd6c4','#e86b8a','#8fa0ff','#b48cf2'];
+  for(let i=0;i<11;i++){const px=84+(i*61)%(Wc-190),py=16+((i*29)%(Hc-52));g.save();g.translate(px,py);g.rotate(((i%5)-2)*.06);g.fillStyle='#e9e3d2';g.fillRect(0,0,34,24);g.fillStyle=cols[i%5];g.fillRect(0,0,34,4);g.fillStyle='#8a8f9e';for(let ln=0;ln<3;ln++)g.fillRect(3,8+ln*5,26-ln*6,1.6);g.restore();g.fillStyle='#e86b8a';g.beginPath();g.arc(px+17,py+2,1.6,0,6.28);g.fill()}}
+ else if(id==='s6'){ // yard: gantry over hull
+  g.strokeStyle='#3a4055';g.lineWidth=4;g.beginPath();g.moveTo(60,14);g.lineTo(Wc-60,14);g.stroke();for(const gx of [120,Wc/2,Wc-120]){g.lineWidth=2;g.beginPath();g.moveTo(gx,14);g.lineTo(gx,34);g.stroke();g.fillStyle='#f2b441';g.fillRect(gx-3,34,6,4)}
+  g.save();g.translate(Wc/2,Hc-30);g.scale(2.2,2.2);g.fillStyle='#2b3044';g.beginPath();g.moveTo(26,0);g.lineTo(-16,-8);g.lineTo(-22,0);g.lineTo(-16,8);g.closePath();g.fill();g.fillStyle='#4fd6c4';g.fillRect(6,-3,8,6);g.restore();
+  for(let sp2=0;sp2<5;sp2++)tw(Wc/2-40+Math.random()*80,Hc-38+Math.random()*14,Math.random()<.5?'#ffd88a':'#7ef0ff')}
+ else if(id==='s7'){ // curio: glowing shelf oddities
+  for(let sh2=0;sh2<2;sh2++){const sy2=30+sh2*34;g.strokeStyle='#3b2b60';g.lineWidth=2;g.beginPath();g.moveTo(40,sy2+14);g.lineTo(Wc-40,sy2+14);g.stroke();
+   for(let i=0;i<9;i++){const ox=70+i*76,hue2=[280,180,40,320,140][i%5];const og=g.createRadialGradient(ox,sy2,1,ox,sy2,12);og.addColorStop(0,`hsla(${hue2},80%,70%,.9)`);og.addColorStop(1,'transparent');g.fillStyle=og;g.beginPath();g.arc(ox,sy2,12,0,6.28);g.fill();g.strokeStyle='rgba(201,176,255,.4)';g.strokeRect(ox-7,sy2-9,14,16)}}
+  g.fillStyle='rgba(180,140,242,.12)';g.beginPath();g.moveTo(10,0);g.quadraticCurveTo(40,Hc/2,10,Hc);g.fill();g.beginPath();g.moveTo(Wc-10,0);g.quadraticCurveTo(Wc-40,Hc/2,Wc-10,Hc);g.fill()}
+ else{ // generic stall (wanderer / misc)
+  g.fillStyle='#141826';g.fillRect(Wc/2-120,Hc-40,240,28);g.strokeStyle='#2b3044';g.strokeRect(Wc/2-120,Hc-40,240,28);
+  for(let aw=0;aw<10;aw++){g.fillStyle=aw%2?'#f2b441':'#0e1119';g.fillRect(Wc/2-120+aw*24,Hc-48,24,8)}
+  for(let i=0;i<5;i++)tw(Wc/2-90+i*45,Hc-34,'#7ef0ff')}
+ // floor sheen + vignette
+ const fs2=g.createLinearGradient(0,Hc-14,0,Hc);fs2.addColorStop(0,'rgba(126,240,255,.05)');fs2.addColorStop(1,'transparent');g.fillStyle=fs2;g.fillRect(0,Hc-14,Wc,14);
+ const vg2=g.createRadialGradient(Wc/2,Hc/2,Hc/2,Wc/2,Hc/2,Wc*.62);vg2.addColorStop(0,'transparent');vg2.addColorStop(1,'rgba(3,4,9,.5)');g.fillStyle=vg2;g.fillRect(0,0,Wc,Hc)}
+function ensureShopScene(){const pane=document.querySelector('#stCard .tab.on');if(!pane||!pane.id||!/^s\d$/.test(pane.id))return;let cv=pane.querySelector('.shopScene');if(!cv){cv=document.createElement('canvas');cv.className='shopScene iico';cv.width=760;cv.height=90;cv.style.cssText='width:100%;height:74px;border:1px solid #2b3044;background:#05060c;display:block;margin:2px 0 6px';pane.prepend(cv)}shopScene(pane.id,cv);pane.querySelectorAll('.pt[data-s]').forEach(c2=>{try{const sd=+c2.dataset.s;if(sd)c2.getContext('2d').drawImage(portrait({seed:sd,sp:c2.dataset.sp||'human'},+c2.getAttribute('width')||48),0,0,c2.width,c2.height)}catch(e9){}});pane.querySelectorAll('.iico[data-i]').forEach(c2=>{try{c2.getContext('2d').drawImage(itemIcon(c2.dataset.i,40),0,0,c2.width,c2.height)}catch(e9){}})}
 function shopStage(){const pk=G.peakC||0;return pk>=5000?3:pk>=2000?2:pk>=650?1:0}
 const STAGE_MSGS=['','Drive tunes, seeker missiles, the pulse laser and the intake scoop are on the shelves.','Heavy plating, mk.3 arrays, the lance laser and deep upgrades just unlocked.','Top-tier refits are open — mk.4 deflectors and the best the promenade stocks.'];
 function mcol(m){const M9={'Iron':'#b0b6c0','Nickel':'#dcc9a0','Cobalt':'#5c8fe0','Titanium':'#9ae0e8','Iridium':'#b48cf2','Osmium':'#7ee0a8','Voidglass':'#ff8ad8','Starheart':'#f2b441'};return M9[(m&&m.n)||m]||'#aab2c0'}
@@ -734,7 +771,7 @@ function die(t){if(demoOn){G.hull=G.maxHull;return}if(G.mode==='dead')return;sto
   G.mode='space';show(null);save();msg(G.align<=-30?'The Reaver tug shoves you loose at Hearth\'s edge. "Professional courtesy. Do not make it a habit."':'The tug drops you at Hearth with half a hull and a lighter ledger. The drift goes on.',7);snd('hail');startHum()};
  show('pDead');save()}
 function pressB(){if(TR)return;if(G.mode==='cabin'&&P){cabinLaunch();return}if(G.mode==='dock'){G._fromDock=1;openStationNow();return}if(G.mode==='space'){if(G.nearPlanet)openOrbit(G.nearPlanet);else if(G.nearSt){G.mode='trans2';startTrans('iris',()=>enterDock())}else if(G.nearDer)boardDerelict();else if((G.shipType||'surveyor')==='dart'){const now=performance.now();if(G._bTap&&now-G._bTap<340&&(!G.dashCd||G.dashCd<=0)){G.dashCd=2;G.dashT=.5;const s2=G.ship;s2.vx+=Math.cos(s2.a)*420;s2.vy+=Math.sin(s2.a)*420;G.trail=G.trail||[];snd('jam');shakeIt(3);for(let i=0;i<8;i++)G.fx.push({x:s2.x-Math.cos(s2.a)*12,y:s2.y-Math.sin(s2.a)*12,vx:-Math.cos(s2.a)*R(60,140)+R(-30,30),vy:-Math.sin(s2.a)*R(60,140)+R(-30,30),l:R(.2,.5),c:'#7ef0ff',r:2});msg('Dash.',1)}G._bTap=now}}else if(G.mode==='rover')roverAction();else if(G.mode==='surf')tryExit();else closePanel()}
-function closePanel(){if(G.mode==='end'){G.mode='rover';show(null);return}if(G.mode==='station'&&G._fromDock){G._fromDock=0;G.mode='dock';show(null);return}if(G.mode==='orbit'||G.mode==='station'||G.mode==='map'||G.mode==='hail')G.mode='space';else if(G.mode==='ship')G.mode=G.prev;else return;show(null)}
+function closePanel(){if(G.mode==='end'){G.mode='rover';show(null);return}if(G.mode==='station'&&G._fromDock){G._fromDock=0;G._dockShop=null;G.mode='dock';show(null);return}if(G.mode==='orbit'||G.mode==='station'||G.mode==='map'||G.mode==='hail')G.mode='space';else if(G.mode==='ship')G.mode=G.prev;else return;show(null)}
 
 // ---------- hails ----------
 const RPORT={};function racePortrait(race,size=48,angry=false){const key=race+'_'+size+(angry?'!':'');if(RPORT[key])return RPORT[key];const c=document.createElement('canvas');c.width=c.height=size;const g=c.getContext('2d');const S=size/96;g.scale(S,S);
@@ -1170,7 +1207,7 @@ G.mode='station';if(!G.jobs)G.jobs=genJobs();save();G.ship.vx=G.ship.vy=0;const 
   const on=c.querySelector('.tabs button.on');if(on)selT=on.dataset.t;draw()},80);draw();
  tc.onclick=(e)=>{const r=tc.getBoundingClientRect();const x=(e.clientX-r.left)*(760/r.width);const idx=clamp(Math.floor(x/bw),0,SHOPS.length-1);const id=SHOPS[idx][0];const btn=c.querySelector(`[data-t=${id}]`);if(btn){btn.click();snd('ping')}};})();
 
- if(G.hull<G.maxHull)gainXp('engineering',Math.round((G.maxHull-G.hull)/4));G.hull=G.maxHull;G.fuel=G.fuelMax;G.sh=G.shMax;show('pStation');
+ if(G.hull<G.maxHull)gainXp('engineering',Math.round((G.maxHull-G.hull)/4));G.hull=G.maxHull;G.fuel=G.fuelMax;G.sh=G.shMax;show('pStation');setTimeout(ensureShopScene,30);
  if($('repay'))$('repay').onclick=()=>{const p=Math.min(G.debt,G.credits);G.debt-=p;G.credits-=p;openStation()};
  $('sell').onclick=()=>{const [hot,cold]=demandPair();let adj=0;for(const k in G.cargo){const v=G.cargo[k];if(k===hot)adj+=Math.round(v.val*.4);if(k===cold)adj-=Math.round(v.val*.2)}const loy2=Math.min(.08,Math.floor((G.sold||0)/5)*.01);G.credits+=payDebt(Math.round((cv_+adj)*(1+loy2)));alignAdj(1);if(adj)msg(adj>0?`Broker Sil pays the demand premium: +${adj}¢.`:`Market glut: ${adj}¢.`,4);G.cargo={};G.hold=0;G.sold++;openStation()};
  c.querySelectorAll('.iico').forEach(cv2=>{try{cv2.getContext('2d').drawImage(itemIcon(cv2.dataset.i,40),0,0,cv2.width,cv2.height)}catch(e9){}});c.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const k=b.dataset.buy;const pr9=+(b.dataset.price||WEAP[k].price);if(G.credits>=pr9){G.credits-=pr9;G.weapons.push(k);G.weapon=k;openStation()}});(()=>{const s3el=c.querySelector('#s3');if(s3el&&(G.cores||0)>0){const pool3=Object.keys(ADDON).filter(k=>!ADDON[k].alien&&!G.addons[k]);const d3=document.createElement('div');d3.innerHTML=`<div class="row"><span>Sentry cores held</span><b style="color:var(--rose)">${G.cores} / 3</b></div>${G.cores>=3&&pool3.length?`<p style="font-size:11px;color:var(--dim)">${G.crew.Engineer} can strip three cores into a working module.</p>${pool3.map(k=>`<button data-core="${k}">Forge ${ADDON[k].n} · 3 cores</button>`).join('')}`:''}`;s3el.appendChild(d3);d3.querySelectorAll('[data-core]').forEach(b3=>b3.onclick=()=>{G.cores-=3;G.addons[b3.dataset.core]=1;G.forged=G.forged||{};G.forged[b3.dataset.core]=1;msg(`${ADDON[b3.dataset.core].n} forged from sentry cores and fitted.`,4);snd('lvl');openStationNow()})}
