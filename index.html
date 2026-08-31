@@ -406,6 +406,7 @@ function drawDock(){const nf=(Math.sin(G.t*.02)+1)/2;const night=nf<.4;
  cx.fillStyle='#b3bacc';cx.font='11px monospace';const c9=dockCtx();cx.fillText(c9?(c9.t==='air'?'Airlock — action button to undock':c9.t==='door'?c9.d.sh[2]+' — action button to enter':'Berth 1 — your hull'):'',12,34);
 }
 let ENC={on:0,t:0,z:1,esc:0};
+let RAID={on:0,t:0};
 let MUS=null;const MUSCFG={space:{root:110,scale:[0,3,5,7,10],gap:[2.8,5],vol:.05,wave:'triangle'},dock:{root:130.8,scale:[0,4,7,9,12],gap:[2.2,4],vol:.05,wave:'sine'},rover:{root:98,scale:[0,2,5,7,9],gap:[3.5,6.5],vol:.045,wave:'sine'},combat:{root:82.4,scale:[0,1,3,6,7],gap:[.9,1.6],vol:.06,wave:'triangle'}};
 function musMode(){if(G.mute)return null;if(G.mode==='dead'||G.mode==='title')return null;const panel=document.querySelector('#pStation.on');if(G.mode==='station'||G.mode==='dock'||panel)return 'dock';if(G.mode==='space')return (G.enemies&&G.enemies.some(e=>e.hostile&&!e.dead&&dist(e,G.ship)<900))?'combat':'space';if(G.mode==='rover')return 'rover';if(G.mode==='surf')return S&&S.sanct?null:'rover';return null}
 function musTick(){try{const m=musMode();if(!m){if(MUS){MUS.pad1&&MUS.g.gain.linearRampToValueAtTime(.0001,AC.currentTime+.8);MUS.mode=null}return}
@@ -520,30 +521,30 @@ function shopScene(id,cv){const g=cv.getContext('2d');const Wc=cv.width,Hc=cv.he
   g.strokeStyle='#c9c1aa';g.lineWidth=1.4;g.beginPath();g.arc(Wc-40,22,10,0,6.28);g.stroke();g.beginPath();g.moveTo(Wc-40,22);g.lineTo(Wc-40+Math.cos(G.t*.5)*6,22+Math.sin(G.t*.5)*6);g.moveTo(Wc-40,22);g.lineTo(Wc-40+Math.cos(G.t*.05)*4,22+Math.sin(G.t*.05)*4);g.stroke();
   // queue rope
   for(let qp=0;qp<3;qp++){const qx=80+qp*90;g.fillStyle='#c9a84a';g.fillRect(qx,FY-24,3,18);g.strokeStyle='rgba(232,107,138,.6)';g.lineWidth=2;if(qp<2){g.beginPath();g.moveTo(qx+3,FY-20);g.quadraticCurveTo(qx+46,FY-12,qx+90,FY-20);g.stroke()}}}
- else if(id==='s6'){ // SHIPYARD — hangar: ship on blocks, gantry+hook, welders, floodlights
-  // hangar ribs
-  g.strokeStyle='rgba(70,80,110,.5)';g.lineWidth=2;for(let rb=0;rb<6;rb++){const rx=40+rb*(Wc-80)/5;g.beginPath();g.moveTo(rx,6);g.lineTo(rx,FY-4);g.stroke()}
-  // gantry crane with chain + hook holding a hull plate
-  g.strokeStyle='#3a4055';g.lineWidth=5;g.beginPath();g.moveTo(30,12);g.lineTo(Wc-30,12);g.stroke();
-  const trolley=Wc/2+Math.sin(G.t*.5)*120;g.fillStyle='#4a5068';g.fillRect(trolley-10,8,20,8);
-  g.strokeStyle='#5a6075';g.lineWidth=1.5;g.beginPath();g.moveTo(trolley,16);g.lineTo(trolley,34);g.stroke();
-  g.fillStyle='#2b3044';g.fillRect(trolley-14,34,28,7);g.strokeStyle='#f2b441';g.strokeRect(trolley-14,34,28,7);
-  // the ship on blocks — big hull with plates missing
-  const shx=Wc/2,shy=FY-18;g.save();g.translate(shx,shy);g.scale(3.1,3.1);
-  g.fillStyle='#2b3044';g.beginPath();g.moveTo(30,0);g.lineTo(-20,-9);g.lineTo(-27,0);g.lineTo(-20,9);g.closePath();g.fill();
-  g.fillStyle='#3a4055';g.beginPath();g.moveTo(30,0);g.lineTo(-20,-9);g.lineTo(-22,-2);g.lineTo(28,-1);g.closePath();g.fill();
-  g.fillStyle='#0a0c14';g.fillRect(-8,-6,8,5);g.fillRect(6,-4,7,4);g.strokeStyle='rgba(242,180,65,.7)';g.lineWidth=.5;g.strokeRect(-8,-6,8,5);g.strokeRect(6,-4,7,4);
-  g.fillStyle='#4fd6c4';g.fillRect(8,-2,6,3);g.restore();
-  // support blocks
-  g.fillStyle='#1a1e2e';g.fillRect(shx-58,FY-8,20,8);g.fillRect(shx+38,FY-8,20,8);
-  for(let cs=0;cs<2;cs++){const csx=shx-58+cs*96;g.fillStyle='#f2b441';for(let st2=0;st2<3;st2++)g.fillRect(csx+st2*7,FY-8,4,8)}
-  // welders: two crouched figures with arc flashes
-  for(const wxp of [shx-84,shx+70]){g.fillStyle='#c9c1aa';g.beginPath();g.arc(wxp,FY-14,3.4,0,6.28);g.fill();g.fillStyle='#8f8a78';g.fillRect(wxp-4,FY-11,8,10);
-   if(Math.sin(G.t*13+wxp)>.1){const ag=g.createRadialGradient(wxp+8,FY-12,1,wxp+8,FY-12,12);ag.addColorStop(0,'rgba(200,240,255,.95)');ag.addColorStop(1,'transparent');g.fillStyle=ag;g.beginPath();g.arc(wxp+8,FY-12,12,0,6.28);g.fill();g.fillStyle='#ffd88a';for(let sp2=0;sp2<5;sp2++)g.fillRect(wxp+8+Math.random()*14-4,FY-14+Math.random()*10,1.5,1.5)}}
-  // floodlight cones
-  for(const fx2 of [110,Wc-110]){const fg2=g.createLinearGradient(fx2,14,fx2,FY);fg2.addColorStop(0,'rgba(255,236,190,.16)');fg2.addColorStop(1,'transparent');g.fillStyle=fg2;g.beginPath();g.moveTo(fx2-4,14);g.lineTo(fx2+4,14);g.lineTo(fx2+40,FY);g.lineTo(fx2-40,FY);g.closePath();g.fill();g.fillStyle='#ffd88a';g.fillRect(fx2-5,10,10,5)}
-  // second hull silhouette deeper in the bay
-  g.fillStyle='rgba(30,36,54,.8)';g.beginPath();g.moveTo(Wc-60,30);g.lineTo(Wc-130,24);g.lineTo(Wc-140,32);g.lineTo(Wc-130,40);g.closePath();g.fill()}
+ else if(id==='s6'){ // SHIPYARD — the lot: real hulls on lit pads, tags, bunting
+  // bunting pennants across the top
+  for(let bl=0;bl<2;bl++){const by0=10+bl*7;g.strokeStyle='rgba(90,100,130,.7)';g.lineWidth=1;g.beginPath();g.moveTo(20,by0);g.quadraticCurveTo(Wc/2,by0+10,Wc-20,by0);g.stroke();
+   for(let pn=0;pn<14;pn++){const tt=(pn+.5)/14;const px2=20+(Wc-40)*tt;const py2=by0+10*4*tt*(1-tt)*.5+ (by0+10*tt*(1-tt)*4)*0 + by0+9*4*tt*(1-tt)-by0;const yy=by0+9*4*tt*(1-tt);g.fillStyle=['#f2b441','#4fd6c4','#e86b8a','#8fa0ff'][pn%4];g.beginPath();g.moveTo(px2-3,yy);g.lineTo(px2+3,yy);g.lineTo(px2,yy+7);g.closePath();g.fill()}}
+  // neon lot sign
+  g.fillStyle='rgba(126,240,255,.9)';g.font='bold 10px monospace';g.textAlign='center';g.fillText('HEARTH SHIPYARD',Wc/2,14);g.strokeStyle='rgba(126,240,255,.35)';g.strokeRect(Wc/2-70,5,140,12);
+  // pads with hulls
+  const keys=Object.keys(SHIPS).slice(0,4);const padW=(Wc-60)/keys.length;
+  keys.forEach((k,ki)=>{const cxp=40+padW*ki+padW/2;
+   // spotlight cone
+   const sg2=g.createLinearGradient(cxp,16,cxp,FY+6);sg2.addColorStop(0,'rgba(255,236,190,.14)');sg2.addColorStop(1,'rgba(255,236,190,.02)');g.fillStyle=sg2;g.beginPath();g.moveTo(cxp-6,16);g.lineTo(cxp+6,16);g.lineTo(cxp+44,FY+6);g.lineTo(cxp-44,FY+6);g.closePath();g.fill();g.fillStyle='#ffd88a';g.fillRect(cxp-5,12,10,4);
+   // pad
+   g.fillStyle='#141826';g.beginPath();g.ellipse(cxp,FY+2,46,9,0,0,6.28);g.fill();g.strokeStyle='rgba(126,240,255,.3)';g.stroke();
+   // hull (real ship texture), gentle hover bob + jaunty angle
+   try{const tex=shipTex(k);g.save();g.translate(cxp,FY-22+Math.sin(G.t*1.4+ki)*1.6);g.rotate(-.5+ki*.06);g.scale(1.15,1.15);g.drawImage(tex,-28,-28,56,56);g.restore()}catch(e9){}
+   // price tag hanging
+   const own=(G.owned||{})[k];const cur=k===(G.shipType||'surveyor');
+   g.strokeStyle='#8a7a4a';g.beginPath();g.moveTo(cxp+26,FY-40);g.lineTo(cxp+30,FY-28);g.stroke();
+   g.save();g.translate(cxp+30,FY-24);g.rotate(.12+Math.sin(G.t*2+ki)*.05);g.fillStyle=cur?'#4fd6c4':own?'#8fa0ff':'#f2b441';g.fillRect(-16,-7,34,14);g.fillStyle='#0a0c14';g.font='bold 8px monospace';g.textAlign='center';g.fillText(cur?'FLYING':own?'OWNED':(SHIPS[k].price>=1000?(SHIPS[k].price/1000).toFixed(SHIPS[k].price%1000?1:0)+'k¢':SHIPS[k].price+'¢'),1,3);g.restore();
+   g.fillStyle='#b3bacc';g.font='8px monospace';g.textAlign='center';g.fillText(SHIPS[k].n.split(' ')[0],cxp,FY+16)});
+  // Brek the salesman by pad 2
+  {const bx2=40+padW*1.06;g.fillStyle='#c9a06a';g.beginPath();g.arc(bx2,FY-16,3.6,0,6.28);g.fill();g.fillStyle='#3a4055';g.fillRect(bx2-4.5,FY-12,9,12);g.fillStyle='#f2b441';g.fillRect(bx2-4.5,FY-12,9,2.4);if(Math.sin(G.t*2.6)>.4){g.strokeStyle='#c9a06a';g.lineWidth=2;g.beginPath();g.moveTo(bx2+4,FY-9);g.lineTo(bx2+10,FY-15);g.stroke()}}
+  // oil stains
+  for(const ox2 of [90,Wc-140]){g.fillStyle='rgba(20,26,40,.8)';g.beginPath();g.ellipse(ox2,FY+4,17,4,0,0,6.28);g.fill()}}
  else if(id==='s7'){ // CURIO — cluttered mystic den
   for(let sh2=0;sh2<2;sh2++){const sy2=26+sh2*26;g.strokeStyle='#3b2b60';g.lineWidth=2.4;g.beginPath();g.moveTo(36,sy2+12);g.lineTo(Wc-160,sy2+12);g.stroke();
    for(let i2=0;i2<8;i2++){const ox=64+i2*68,hue2=[280,180,40,320,140,200][i2%6];
@@ -770,7 +771,14 @@ function updSpace(dt){const s=G.ship;let ax=axis();if(G.route&&!ax.x&&!ax.y){con
  if(dp>p9.r*.92&&dp<p9.r*1.6&&Math.hypot(s5.vx,s5.vy)>330&&!(G._gaDone&&G._gaDone[p9.id])){G._gaDone=G._gaDone||{};G._gaDone[p9.id]=1;G.gaCount=(G.gaCount||0)+1;s5.vx*=1.08;s5.vy*=1.08;gainXp('piloting',8);msg(`Gravity assist off ${p9.name} — +8% velocity banked. Textbook.`,4);snd('lvl')}
  if(dp>p9.r*.9&&dp<p9.r*6){const ga=Math.min(55,140*p9.r*p9.r/(dp*dp));s5.vx+=((p9.x-s5.x)/dp)*ga*dt;s5.vy+=((p9.y-s5.y)/dp)*ga*dt;if(ga>(G._gravA||0)){G._gravA=ga;G._gravD=Math.atan2(p9.y-s5.y,p9.x-s5.x);G._gravP=p9}}}}}
  {const stH=homeSys().station;const dSt=Math.hypot(G.ship.x-stH.x,G.ship.y-stH.y);
- if(dSt<2800){const hgs=G.enemies.filter(e=>e.hg&&e.hp>0);if(hgs.length<2&&(!G._hgCd||G.t-G._hgCd>4)){G._hgCd=G.t;const pa0=Math.random()*6.28;G.enemies.push({x:stH.x+Math.cos(pa0)*500,y:stH.y+Math.sin(pa0)*500,vx:0,vy:0,hp:150,kind:'patrol',friendly:1,esc:1,hg:1,_pa:pa0,_pd:Math.random()<.5?1:-1,_pr:420+Math.random()*260,ph:Math.random()*6});if(!G._hgSeen){G._hgSeen=1;msg('⛨ Hearthguard wing on station. "Lamps are lit, Freeholder. Fly safe."',5)}}}
+ // Reaver raid event
+ if(!RAID.on&&dSt<2600&&G.t>240&&(!G._raidCd||G.t-G._raidCd>600)&&Math.random()<dt/200){RAID={on:1,t:0};G._raidCd=G.t;G.banner={t:3,txt:'⛨ REAVER RAID',sub:'THE LAMPS ARE UNDER ATTACK — DEFEND THE STATION'};msg('⛨ KLAXON — Reaver raid inbound on Hearth Station! The Hearthguard is scrambling. Stand and fight, Freeholder!',9);snd('boom');shakeIt(6);
+  for(let ri=0;ri<5;ri++){const ra=Math.random()*6.28;G.enemies.push({x:stH.x+Math.cos(ra)*1600,y:stH.y+Math.sin(ra)*1600,vx:0,vy:0,hp:ri===4?120:70,kind:ri===4?'gunship':'raider',race:'kessen',ct:1.5+Math.random(),ph:Math.random()*6,hostile:1,rd:1})}}
+ if(RAID.on){RAID.t+=dt;const left=G.enemies.filter(e=>e.rd&&e.hp>0).length;
+  if(left===0){RAID.on=0;let bonus='';if(!G.raidGifted){G.raidGifted=1;if(!G.weapons.includes('laser2')){G.weapons.push('laser2');bonus=' The Yardmaster bolts a HEARTHGUARD-ISSUE LANCE LASER to your rack — "You earned the lamps."'}else{G.credits+=500;bonus=' +500¢ honor bonus.'}}
+   G.credits+=800;alignAdj(3);G.rep.kessen-=1;G.log.push({n:'The raid on Hearth',t:'Reavers came for the lamps and the lamps held. You flew with the Hearthguard and the Authority remembers: 800¢ defense bounty.'+bonus});msg('⛨ RAID BROKEN. Authority defense bounty 800¢.'+bonus,10);snd('lvl');save(1)}
+  else if(dSt>4200){RAID.on=0;for(const e of G.enemies)if(e.rd)e.hp=-1;msg('You left the lamps to fight without you. The raid disperses into the dark.',6)}}
+ if(dSt<2800){const hgs=G.enemies.filter(e=>e.hg&&e.hp>0);if(hgs.length<(RAID.on?4:2)&&(!G._hgCd||G.t-G._hgCd>4)){G._hgCd=G.t;const pa0=Math.random()*6.28;G.enemies.push({x:stH.x+Math.cos(pa0)*500,y:stH.y+Math.sin(pa0)*500,vx:0,vy:0,hp:150,kind:'patrol',friendly:1,esc:1,hg:1,_pa:pa0,_pd:Math.random()<.5?1:-1,_pr:420+Math.random()*260,ph:Math.random()*6});if(!G._hgSeen){G._hgSeen=1;msg('⛨ Hearthguard wing on station. "Lamps are lit, Freeholder. Fly safe."',5)}}}
  else{for(const e of G.enemies)if(e.hg&&dSt>4200)e.hp=-1}
  const hostiles=G.enemies.filter(e=>!e.friendly&&(e.hostile||(ENC.on&&dist(e,G.ship)<3200)));let nd=1e9;for(const e of hostiles)nd=Math.min(nd,dist(e,G.ship));
  if(!ENC.on&&hostiles.length&&nd<900){ENC.on=1;ENC.esc=0;msg('◈ ENCOUNTER — combat grid engaged. Outrun them past the grid edge to disengage.',5)}
@@ -805,7 +813,12 @@ function updSpace(dt){const s=G.ship;let ax=axis();if(G.route&&!ax.x&&!ax.y){con
 {G.worms=G.worms||{};const wps=wormPairs();for(let wi=0;wi<wps.length;wi++){const wp=wps[wi];for(const [end,other] of [[wp.a,wp.b],[wp.b,wp.a]]){const dw=dist(end,s);
   if(dw<640&&!G.worms[wi]){if(G.veilLens){G.worms[wi]=1;msg('◈ The Resonance Lens sings — the anomaly resolves: a STABLE WORMHOLE. Its twin is charted on the map.',8);snd('lvl');save(1)}else if(!(G._wormP&&G._wormP[wi])){(G._wormP=G._wormP||{})[wi]=1;G.banner={t:2.4,txt:'◈ UNKNOWN ANOMALY',sub:'SENSORS CANNOT RESOLVE'};msg('⚠ SENSOR ALERT — an anomaly the instruments cannot read. The Veil are said to carry the key.',8);snd('hail')}}
   if(dw<70&&G.worms[wi]&&!G._wtCd){G._wtCd=3;G.mode='trans';startTrans('iris',()=>{G.mode='space';G.ship.x=other.x+140;G.ship.y=other.y;G.cam.x=G.ship.x;G.cam.y=G.ship.y;G.ship.vx*=.4;G.ship.vy*=.4;msg('◈ THROUGH. The universe folds and sets you down '+Math.round(Math.hypot(other.x-end.x,other.y-end.y)/40)+' lightyears away.',7);snd('lvl')});snd('warp2')}}}
- if(G._wtCd)G._wtCd=Math.max(0,G._wtCd-dt);}
+ if(G._wtCd)G._wtCd=Math.max(0,G._wtCd-dt);
+ {const fb=wormPairs()[2].b;const fd=dist({x:fb.x+30,y:fb.y-40},s);
+  if(!G.fleetFound&&fd<260){G.fleetFound=1;const pool=Object.keys(WEAP).filter(k=>WEAP[k].alien&&!G.weapons.includes(k));let got;if(pool.length){got=pool[0];G.weapons.push(got)}else{G.credits+=900;got=null}
+   G.log.push({n:'The Silent Fleet',t:'On the far side of the third door: a fleet at anchor with no one aboard. Hulls older than the Authority, drifting in formation, holds empty, logs wiped — except one line repeating in the flagship: WE FOLLOWED THE FIRST LIGHT IN. One window still burns. '+(got?'You cut the '+WEAP[got].n+' from the flagship rack.':'You strip 900¢ of salvage from the flagship.')});
+   msg('◈ THE SILENT FLEET. They followed the First Light in — and left everything. '+(got?WEAP[got].n+' recovered from the flagship.':'+900¢ salvage.')+' The Log holds the story.',12);snd('lvl');save(1)}
+  if(!G._fleetHint&&G.worms&&G.worms[0]&&G.worms[1]&&G.worms[2]){G._fleetHint=1;G.log.push({n:'The third door',t:'All three doors are charted. The Resonance Lens hums differently near the third pair — its far mouth opens on silence. Something is anchored there.'});msg('◈ The Lens hums over the chart: the THIRD DOOR opens on silence. Something waits on the far side.',9)}}}
  G.nearSt=nearSt;setBtns('FIRE',G.nearPlanet?'ORBIT':nearSt?'DOCK':G.nearDer?'BOARD':'—',G.nearPlanet||nearSt||G.nearDer);
  const d=Math.hypot(s.x,s.y);if(G.dmsgIdx<DISTMSG.length&&d>DISTMSG[G.dmsgIdx][0]){msg(DISTMSG[G.dmsgIdx][1],6);G.dmsgIdx++}
  if(G.bounty)G.bountyT+=dt;else G.bountyT=0;
@@ -829,13 +842,13 @@ function updSpace(dt){const s=G.ship;let ax=axis();if(G.route&&!ax.x&&!ax.y){con
  const dd=dist(e,s);if(!e.hostile&&!e.fleeing&&e.race==='kessen'&&(e.kind==='raider'||e.kind==='gunship')&&!e.greedC&&dd<420){e.greedC=1;const deep=Math.hypot(s.x,s.y)>20800;if(deep&&G.hold>G.holdMax*.7&&Math.random()<(G.posture==='deferent'?.62:G.posture==='defiant'?.4:.5)){e.hostile=1;e.inter=1;msg('The raider sweeps your holds — heavy. It turns in.',4);snd('hunter')}}
  if(e.fleeing){const fa=Math.atan2(e.y-s.y,e.x-s.x);e.vx+=Math.cos(fa)*120*dt;e.vy+=Math.sin(fa)*120*dt;if(!e.fled&&Math.random()<dt*.5){e.fled=1;msg('The raider marks your gun pods and burns away.',3)}}
   if(e.hostile&&(!e.boss||e.boss==='dread')&&(e.kind==='raider'||e.kind==='gunship'||e.kind==='dread')&&!e.inter&&dd<(e.kind==='dread'?520:330)&&G.intCd<=0&&G.burst<=0){e.inter=1;openIntercept(e);return}if(e.hostile&&dd<best){best=dd;G.target=e}
-  if(!e.hostile){if(dd<240&&!e.hailed&&G.hailCd<=0){e.hailed=1;openHail(e);return}const wander=Math.atan2(s.y-e.y,s.x-e.x);if(dd<160){e.vx-=Math.cos(wander)*80*dt;e.vy-=Math.sin(wander)*80*dt}else if(dd>200){e.vx+=Math.cos(wander)*90*dt;e.vy+=Math.sin(wander)*90*dt}e.vx*=.97;e.vy*=.97;e.x+=e.vx*dt;e.y+=e.vy*dt;if(dd>(ENC.on?4200:1800))e.hp=-1;continue}
+  if(!e.hostile){if(dd<240&&!e.hailed&&G.hailCd<=0){e.hailed=1;openHail(e);return}const wander=Math.atan2(s.y-e.y,s.x-e.x);if(dd<160){e.vx-=Math.cos(wander)*80*dt;e.vy-=Math.sin(wander)*80*dt}else if(dd>200){e.vx+=Math.cos(wander)*90*dt;e.vy+=Math.sin(wander)*90*dt}e.vx*=.97;e.vy*=.97;e.x+=e.vx*dt;e.y+=e.vy*dt;if(!e.rd&&dd>(ENC.on?4200:1800))e.hp=-1;continue}
   const ang=Math.atan2(s.y-e.y,s.x-e.x);const spd=e.kind==='dread'?230:e.kind==='flagship'?70:e.kind==='watcher'?120:e.kind==='gunship'?90:170;const keep=e.kind==='dread'?220:e.kind==='flagship'?300:e.kind==='gunship'?260:180;
   if(dd>keep){{const es=Math.hypot(e.vx,e.vy);let ef=1;if(es>80){const al2=(Math.cos(ang)*e.vx+Math.sin(ang)*e.vy)/es;ef=.5+.5*Math.pow((al2+1)/2,1.3)}e.vx+=Math.cos(ang)*spd*ef*dt;e.vy+=Math.sin(ang)*spd*ef*dt}}else{e.vx-=Math.cos(ang)*60*dt;e.vy-=Math.sin(ang)*60*dt}
   if(e.kind==='watcher'){e.vx+=Math.cos(G.t*2+e.ph)*80*dt;e.vy+=Math.sin(G.t*2+e.ph)*80*dt}
   e.vx*=.97;e.vy*=.97;e.x+=e.vx*dt;e.y+=e.vy*dt;e.ct-=dt;const mh=e.maxHp||(e.kind==='gunship'?160:e.kind==='watcher'?70:e.kind==='veil'?90:35);if(e.hp<mh*.5&&Math.random()<dt*8){G.fx.push({x:e.x+R(-8,8),y:e.y+R(-8,8),vx:R(-15,15),vy:R(-15,15),l:R(.5,1.1),c:e.hp<mh*.25?'#ff8a50':'#555b6e',r:R(2,4)})}
   if(e.ct<0&&dd<(e.kind==='dread'?700:e.kind==='flagship'?560:460)){e.ct=e.kind==='dread'?.3:e.kind==='flagship'?.35:e.kind==='watcher'?.7:e.kind==='gunship'?.5:1.5;const n=e.kind==='dread'?7:e.kind==='flagship'?5:e.kind==='gunship'?3:1;for(let i=0;i<n;i++){const a2=ang+(i-1)*.12;if((e.kind==='gunship'||e.kind==='dread')&&((e.msl=(e.msl||0)+1)%3===0)){G.ebul.push({hom:1,x:e.x,y:e.y,a:a2,spd:(ENC.on?.75:1)*(e.kind==='dread'?265:225),turn:e.kind==='dread'?2.0:1.6,l:4.2,dm:e.kind==='dread'?20:12})}else G.ebul.push({x:e.x,y:e.y,vx:Math.cos(a2)*(e.kind==='dread'?400:300),vy:Math.sin(a2)*(e.kind==='dread'?400:300),l:2.2,dm:e.kind==='dread'?16:e.kind==='gunship'?7:e.kind==='watcher'?6:5})}}
-  if(dd>(ENC.on?4200:(e.kind==='dread'?3200:1800)))e.hp=-1}
+  if(!e.rd&&dd>(ENC.on?4200:(e.kind==='dread'?3200:1800)))e.hp=-1}
  G.enemies=G.enemies.filter(e=>e.hp>0);
  G.cd=(G.cd||0)-dt;G.cd2=(G.cd2||0)-dt;const wp=WEAP[G.weapon],wp2=WEAP[G.weapon2];if(IN.a&&G.cd<=0&&G.target&&wp)fire(wp,s,'cd');if(IN.a&&G.cd2<=0&&G.target&&wp2&&G.weapon2!==G.weapon)fire(wp2,s,'cd2');if(IN.a&&!wp&&!wp2&&G.cd<=0){G.cd=2;msg('No weapon fitted. Hearth Station sells missile racks.',2)}
  for(const b of G.bullets){b.l-=dt;for(const eb of G.ebul){if(eb.hom&&eb.l>0&&Math.hypot(eb.x-b.x,eb.y-b.y)<15){eb.l=0;b.l=0;boom(eb.x,eb.y,6,'#ff9a3c');msg('Missile intercepted.',1.5);break}}
@@ -1250,7 +1263,7 @@ function openOrbit(p){p._appSp=Math.hypot(G.ship.vx,G.ship.vy);G.mode='orbit';G.
 function charge(fee,why){if(G.credits>=fee){G.credits-=fee;msg(`${why}: ${fee}¢ paid.`,4)}else{const short=fee-G.credits;G.credits=0;G.debt+=Math.round(short*1.25);msg(`${why}: ${fee}¢. Short ${short}¢ — Authority loan issued at 25% interest. Debt ${G.debt}¢ (half of every sale goes to repayment).`,8);snd('hit')}}
 function payDebt(amount){if(G.debt<=0)return amount;const cut=Math.min(G.debt,Math.round(amount*.5));G.debt-=cut;msg(`${cut}¢ withheld for loan repayment. Debt ${G.debt}¢.`,4);return amount-cut}
 function cargoVal(){let v=0;for(const k in G.cargo)v+=(k==='Promethium'?G.cargo[k].n*vfPrice():G.cargo[k].val);return v}
-const SAVEK=['hull','maxHull','sh','shMax','fuel','fuelMax','credits','cargo','hold','holdMax','arts','log','dmg','spd','rate','burn','sciB','lifeB','air','scanR','rovArm','dmsgIdx','sold','kills','weapon','weapon2','weapons','addons','best','grants','bounty','hails','wps','bountyT','derelicts','hkills','logs','derFound','glyphs','glyphMark','glyphClaimed','cores','stompHint','forged','jobs','jobsDone','shipType','owned','lzs','posture','story','scorched','curioBought','align','recN','escPay','wrecks','maxDepth','caveBottoms','coreSamples','csVal','csWorlds','gaCount','volM','volS','stormPearls','peakC','shopStage','worms','veilLens','doorHint','lampB','scoopB','skill','rep','met','upg','crew','crewM','scanned','visited','mute','found','explored','debt','tows','roverLost','contract','rovGun','orrery','ended','bossDone'];
+const SAVEK=['hull','maxHull','sh','shMax','fuel','fuelMax','credits','cargo','hold','holdMax','arts','log','dmg','spd','rate','burn','sciB','lifeB','air','scanR','rovArm','dmsgIdx','sold','kills','weapon','weapon2','weapons','addons','best','grants','bounty','hails','wps','bountyT','derelicts','hkills','logs','derFound','glyphs','glyphMark','glyphClaimed','cores','stompHint','forged','jobs','jobsDone','shipType','owned','lzs','posture','story','scorched','curioBought','align','recN','escPay','wrecks','maxDepth','caveBottoms','coreSamples','csVal','csWorlds','gaCount','volM','volS','stormPearls','peakC','shopStage','worms','veilLens','doorHint','raidGifted','fleetFound','lampB','scoopB','skill','rep','met','upg','crew','crewM','scanned','visited','mute','found','explored','debt','tows','roverLost','contract','rovGun','orrery','ended','bossDone'];
 function save(quiet){save._q=quiet;if(demoOn)return;try{const ek=Object.keys(G.explored);if(ek.length>900){for(const k of ek.slice(0,ek.length-900))delete G.explored[k]}const o={};for(const k of SAVEK)o[k]=G[k];o.ship={x:G.ship.x,y:G.ship.y};localStorage.setItem('farlight',JSON.stringify(o));if(!save._q)msg('Voyage log saved.',2)}catch(e){}}
 function load(){try{const o=JSON.parse(localStorage.getItem('farlight'));if(!o)return false;for(const k of SAVEK)if(o[k]!==undefined)G[k]=o[k];if(G.cargo&&G.cargo['Voidfuel']){G.cargo['Promethium']=G.cargo['Voidfuel'];delete G.cargo['Voidfuel']}G.ship.x=o.ship.x;G.ship.y=o.ship.y;G.cam.x=o.ship.x;G.cam.y=o.ship.y;G.crewM={};CREW.forEach(c=>{G.crewM[c.role]=[c,ALT[c.role]].find(x=>x.name===G.crew[c.role])||c});return true}catch(e){return false}}
 try{if(localStorage.getItem('farlight')){const bc=$('bCont'),bq=$('bQuick');bc.style.display='inline-block';$('bNew').style.display='inline-block';bc.classList.add('go');bq.classList.remove('go');bq.parentElement.insertBefore(bc,bq)}}catch(e){}
@@ -2006,6 +2019,20 @@ function drawSpace(){SPZ=.72*(ENC.z||1);const s=G.ship,c=G.cam;if(shake>0){shake
    cx.fillStyle='#242b3e';cx.beginPath();cx.moveTo(5,0);cx.lineTo(-4,-2.4);cx.lineTo(-4,2.4);cx.closePath();cx.fill();
    cx.fillStyle='rgba(126,240,255,.8)';cx.fillRect(-6,-1,2,2);cx.restore()}
   cx.restore()
+ // the Silent Fleet — graveyard on the far side of the third door
+ {const fb=wormPairs()[2].b;if(Math.abs(fb.x-c.x)<W*1.6&&Math.abs(fb.y-c.y)<H*1.6){
+  const HK=[[-160,-40,.5,2.2],[120,-110,2.4,1.7],[260,60,1.1,2.6],[-60,170,3.8,1.9],[40,-230,5.2,1.5],[-260,90,.9,1.8]];
+  for(const [hx,hy,hr,hs] of HK){cx.save();cx.translate(fb.x+hx,fb.y+hy);cx.rotate(hr+Math.sin(G.t*.08+hx)*.02);cx.scale(hs,hs);
+   cx.fillStyle='#232a3e';cx.beginPath();cx.moveTo(16,0);cx.lineTo(-11,-5);cx.lineTo(-14,0);cx.lineTo(-11,5);cx.closePath();cx.fill();
+   cx.strokeStyle='rgba(140,158,196,.75)';cx.lineWidth=.8;cx.stroke();cx.strokeStyle='rgba(200,214,240,.5)';cx.beginPath();cx.moveTo(16,0);cx.lineTo(-11,-5);cx.stroke();
+   cx.fillStyle='#0a0c14';cx.fillRect(-4,-3,4,2);cx.fillRect(3,-2,3,2);cx.restore()}
+  // drifting debris glints among the hulks
+  for(let dg=0;dg<14;dg++){const da2=hash(dg,1,909)*6.28+G.t*.01;const dr2=90+hash(dg,2,909)*260;cx.fillStyle=`rgba(190,205,235,${(.25+Math.sin(G.t*.9+dg)*.2).toFixed(2)})`;cx.fillRect(fb.x+Math.cos(da2)*dr2,fb.y+Math.sin(da2)*dr2,1.6,1.6)}
+  // the flagship — one window still faintly lit
+  cx.save();cx.translate(fb.x+30,fb.y-40);cx.rotate(.35);cx.scale(4.4,4.4);
+  cx.fillStyle='#1c2233';cx.beginPath();cx.moveTo(22,0);cx.lineTo(-14,-7);cx.lineTo(-19,0);cx.lineTo(-14,7);cx.closePath();cx.fill();cx.strokeStyle='rgba(80,92,120,.7)';cx.lineWidth=.5;cx.stroke();
+  cx.fillStyle=`rgba(126,240,255,${(.3+Math.sin(G.t*.7)*.25).toFixed(2)})`;cx.fillRect(4,-2,3,2);cx.restore();
+  if(!G.fleetFound&&dist({x:fb.x+30,y:fb.y-40},G.ship)<900){cx.fillStyle='rgba(126,240,255,.8)';cx.font='11px monospace';cx.textAlign='center';cx.fillText('◈ SILENT FLEET',fb.x+30,fb.y-140)}}}
  // wormholes
  {G.worms=G.worms||{};for(let wi=0;wi<wormPairs().length;wi++){const wp=wormPairs()[wi];for(const end of [wp.a,wp.b]){if(Math.abs(end.x-c.x)>W*1.2||Math.abs(end.y-c.y)>H*1.2)continue;const known=G.worms[wi];const dws=dist(end,G.ship);if(!known&&dws>(G.veilLens?2600:1600))continue;cx.save();cx.translate(end.x,end.y);
   if(known){cx.rotate(G.t*.8);for(let r9=0;r9<3;r9++){const rr9=26+r9*10+Math.sin(G.t*3+r9)*3;cx.strokeStyle=`hsla(${190+r9*30},80%,${64-r9*8}%,${.7-r9*.18})`;cx.lineWidth=2.5-r9*.6;cx.beginPath();cx.arc(0,0,rr9,r9*.9,r9*.9+5.2);cx.stroke()}
