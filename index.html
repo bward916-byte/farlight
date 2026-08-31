@@ -1003,7 +1003,7 @@ function openHail(e){G.mode='hail';G.hailCd=25;G.ship.vx=G.ship.vy=0;snd('hail')
   <div style="flex:1;min-width:0;border:1px solid #23283a;padding:8px 10px;display:flex;flex-direction:column;gap:5px">
    <div style="font-size:12px;color:var(--dim)">COMM CHANNEL · translation <b style="color:${tq[1]}">${tq[0]}</b> · <b style="color:var(--amber)">Comms ${clv}</b>${clv<2?'':''}</div>
    <p style="color:${r.c};margin:0">▸ ${xlate(line.replace(/"/g,''),clv)}</p>
-   ${first?`<p style="font-size:12px;color:var(--dim);margin:0">${xlate(r.lore,Math.max(1,clv))}</p>`:''}
+   ${(first&&clv>=1)?`<p style="font-size:11px;color:var(--dim);margin:0">${xlate(r.lore,clv)}</p>`:''}
    <div id="hailIntel" style="font-size:12px;color:var(--dim)">◉ Vessel unscanned — scan to read hull, guns and intent.</div>
    <div style="font-size:12px;color:var(--dim);margin-top:auto">◂ ${cm?G.crew['Comms']:'No one'}: "${clv>=2?'Clean signal, Captain. I have them word for word.':clv>=1?'Rough signal — I am filling gaps by tone.':'I am guessing from gesture and static, Captain. Choose carefully.'}"</div>
   </div>
@@ -1014,18 +1014,19 @@ function openHail(e){G.mode='hail';G.hailCd=25;G.ship.vx=G.ship.vy=0;snd('hail')
   </div>
  </div>
  ${postureSlider()}
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
- <button class="go" data-h="greet" style="margin:0">✉ GREET${subGo('costs nothing · builds standing')}</button>
- <button data-h="trade" style="margin:0" ${cv_?'':'disabled'}>${e.race==='veil'?`⇄ TRADE · ${Math.round(cv_*1.4)}¢`:e.race==='kessen'?`⇄ FENCE · ${Math.round(cv_*.7)}¢`:`⇄ RESONATE · ${Math.round(cv_*1.05)}¢`}${sub(e.race==='kessen'?'sell the hold, no questions — the ledger remembers':'sell your entire hold')}</button>
- ${e.race==='umbra'?`<button data-h="listen" style="margin:0">◉ LISTEN${sub('let it speak — knowledge or dread')}</button>`:''}
- <button data-h="scan" style="margin:0">◉ SCAN VESSEL${sub('hull · guns · verdict')}</button>
- ${e.race==='veil'&&!G.contract?`<button data-h="contract" style="margin:0">◈ TAKE A CONTRACT${sub('haul minerals for Veil pay')}</button>`:''}
- ${e.race==='veil'&&G.bounty?`<button data-h="bounty" style="margin:0" ${G.credits<G.bounty?'disabled':''}>⚖ BUY OFF BOUNTY · ${G.bounty}¢${sub('the Veil broker your Kessen mark away')}</button>`:''}
- ${G.contract&&e.race==='veil'&&(G.cargo[G.contract.m]||{n:0}).n>=G.contract.n?`<button class="go" data-h="deliver" style="margin:0">◈ DELIVER ${G.contract.n}× ${G.contract.m} · ${G.contract.pay}¢${subGo('contract complete')}</button>`:''}
- ${e.race==='veil'&&!G.veilLens?`<button data-h="lens" style="margin:0" ${(G.rep.veil<2||G.credits<1500)?'disabled':''}>◈ THE RESONANCE LENS · 1500¢${sub(G.rep.veil<2?'the Concord does not sell to strangers — standing +2 first':'alien technology · reveals the doors in the dark')}</button>`:''}<button data-h="fuel" style="margin:0" ${G.credits<120?'disabled':''}>⛽ BUY FUEL · 120¢${sub('+40 to the tank')}</button>
- ${e.race==='kessen'?`<button data-h="bribe" style="margin:0" ${G.credits<Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))?'disabled':''}>⚖ BRIBE · ${Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))}¢${sub('safe passage, this once')}</button>`:''}
- <button data-h="threat" style="margin:0">⚔ THREATEN${sub('fear works — friendship dies')}</button>
- <button data-h="leave" style="margin:0;grid-column:1/-1">✖ BREAK CHANNEL${sub('end the hail')}</button>
+ <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px;margin-top:6px">
+ <button class="go" data-h="greet" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">✉<br>GREET</button>
+ <button data-h="scan" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">◉<br>SCAN</button>
+ <button data-h="trade" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25" ${cv_?'':'disabled'}>⇄<br>${e.race==='veil'?`TRADE ${Math.round(cv_*1.4)}¢`:e.race==='kessen'?`FENCE ${Math.round(cv_*.7)}¢`:`TRADE ${Math.round(cv_*1.05)}¢`}</button>
+ ${e.race==='umbra'?`<button data-h="listen" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">◬<br>LISTEN</button>`:''}
+ ${e.race==='veil'&&!G.contract?`<button data-h="contract" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">◈<br>CONTRACT</button>`:''}
+ ${G.contract&&e.race==='veil'&&(G.cargo[G.contract.m]||{n:0}).n>=G.contract.n?`<button class="go" data-h="deliver" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">◈<br>DELIVER ${G.contract.pay}¢</button>`:''}
+ ${e.race==='veil'&&G.bounty?`<button data-h="bounty" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25" ${G.credits<G.bounty?'disabled':''}>⚖<br>BOUNTY ${G.bounty}¢</button>`:''}
+ ${e.race==='veil'&&!G.veilLens?`<button data-h="lens" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25;border-color:var(--violet);color:var(--violet)" ${(G.rep.veil<2||G.credits<1500)?'disabled':''}>◈<br>LENS 1500¢</button>`:''}
+ <button data-h="fuel" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25" ${G.credits<120?'disabled':''}>⛽<br>FUEL 120¢</button>
+ ${e.race==='kessen'?`<button data-h="bribe" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25" ${G.credits<Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))?'disabled':''}>⚖<br>BRIBE ${Math.round((120+Math.hypot(G.ship.x,G.ship.y)/72)*(G.posture==='defiant'?1.3:G.posture==='deferent'?.75:1))}¢</button>`:''}
+ <button data-h="threat" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25;border-color:var(--rose);color:var(--rose)">⚔<br>THREATEN</button>
+ <button data-h="leave" style="margin:0;padding:7px 4px;min-height:52px;font-size:12px!important;line-height:1.25">✖<br>BREAK</button>
  </div>`;
  c.querySelectorAll('.bigpt').forEach(cv3=>{try{cv3.getContext('2d').drawImage(racePortrait(e.race,88,rp<=-3),0,0,cv3.width,cv3.height)}catch(e2){}});
  c.querySelectorAll('.pt').forEach(cv3=>{try{if(cm)cv3.getContext('2d').drawImage(portrait(cm,+cv3.getAttribute('width')||88),0,0,cv3.width,cv3.height)}catch(e2){}});
@@ -1046,7 +1047,7 @@ const QUIRKS=[['Hums old Hearth hymns on night watch','calm'],['Keeps a dead fri
 function alignTier(){return G.align>=30?['HONEST TRADER','var(--teal)']:G.align<=-30?['MARKED PIRATE','var(--rose)']:['FREELANCER','var(--dim)']}
 function alignAdj(n,why){const t0=alignTier()[0];G.align=clamp((G.align||0)+n,-100,100);const t1=alignTier()[0];if(t0!==t1){G.logs=G.logs||[];G.logs.push(`⚖ Authority ledger amended: ${t1}. Standing ${G.align>0?'+':''}${G.align}.`);msg(`Word travels. The Authority ledgers now list you: ${t1}.${t1==='MARKED PIRATE'?' Contracts pay less — but fences pay more, and the Reavers nod as you pass.':t1==='HONEST TRADER'?' Contracts pay a bonus. Reavers see a mark worth taking.':''}`,8);snd('hail')}}
 const POST={defiant:['⚑','DEFIANT','#e86b8a'],composed:['◈','COMPOSED','#f2b441'],deferent:['⚐','DEFERENT','#4fd6c4']};
-function xlate(txt,lv){if(lv>=2)return txt;const words=txt.split(' ');const bad=lv>=1?.2:.45;let sd9=0;for(const ch of txt)sd9+=ch.charCodeAt(0);return words.map((w,i)=>hash(sd9,i,7)<bad&&w.length>3?'▓'.repeat(Math.min(5,w.length)):w).join(' ')}
+function xlate(txt,lv){if(lv>=2)return txt;const words=txt.split(' ');const bad=lv>=1?.2:.45;let sd9=0;for(const ch of txt)sd9+=ch.charCodeAt(0);const GL='ϟҔ⌇϶ЖΔ҂ψʘλӜ∴ξϑ⍙ᚋ';return words.map((w,i)=>{if(!(hash(sd9,i,7)<bad&&w.length>3))return w;let o='';for(let ci2=0;ci2<Math.min(6,w.length);ci2++)o+=GL[Math.floor(hash(sd9,i*13+ci2,8)*GL.length)];return '<span style="color:'+'#9a86c8'+';letter-spacing:.06em">'+o+'</span>'}).join(' ')}
 function postureSlider(){const idx=G.posture==='deferent'?0:G.posture==='defiant'?2:1;return `<div style="display:flex;gap:10px;align-items:center;margin:6px 0;border:1px solid #23283a;padding:7px 10px"><span class="eyebrow" style="font-size:12px">POSTURE</span><span style="font-size:12px;color:var(--teal)">⚑ deferent</span><input id="postSl" type="range" min="0" max="2" step="1" value="${idx}" style="flex:1;accent-color:var(--amber)"><span style="font-size:12px;color:var(--rose)">defiant ⚑</span><b id="postLbl" style="font-size:12px;width:74px;text-align:right;color:${idx===0?'var(--teal)':idx===2?'var(--rose)':'var(--amber)'}">${(G.posture||'composed').toUpperCase()}</b></div>`}
 function wirePostSlider(c,rerender){const sl=c.querySelector('#postSl');if(!sl)return;sl.oninput=()=>{G.posture=['deferent','composed','defiant'][+sl.value];const lb=c.querySelector('#postLbl');if(lb){lb.textContent=G.posture.toUpperCase();lb.style.color=+sl.value===0?'var(--teal)':+sl.value===2?'var(--rose)':'var(--amber)'}};sl.onchange=()=>{snd('ping');save();rerender()}}
 function hailReact(e,act){ // outcome engine: returns after most actions
