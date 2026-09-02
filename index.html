@@ -154,7 +154,7 @@ body.allowPortrait #rot{display:none!important}
  <div class="panel on" id="pTitle"><div class="card tcard" style="padding:10px 16px;width:96vw;max-width:96vw;overflow:hidden"><div class="title">
   <div style="display:flex;flex-direction:column;justify-content:center;min-height:0"><div class="eyebrow">Freehold Registry · Vessel FL-7</div><div id="titleStats" class="statSym" style="display:none;color:var(--teal);margin:2px 0"></div><h1>FARLIGHT</h1><div class="tagline">A LIVING SCRAPED FROM THE FAR DARK</div>
   <p class="blurb" style="margin-top:6px">Hearth is the last lit port before the charts run out. You hold a freehold: one tired ship, an open ledger, and the right to keep whatever the dark gives up. Fly out, land, dig, haul, deal — the further you drift, the stranger and richer it gets, and the harder it fights back.</p>
-  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">⛴ Continue voyage</button><button id="bNew" style="display:none;border-color:var(--rose);color:var(--rose)">Start new (erase save)</button></div><div class="vfoot">v175 · BLYTHE CACTUS SOFTWARE</div></div>
+  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">⛴ Continue voyage</button><button id="bNew" style="display:none;border-color:var(--rose);color:var(--rose)">Start new (erase save)</button></div><div class="vfoot">v176 · BLYTHE CACTUS SOFTWARE</div></div>
   <div style="display:flex;flex-direction:column;min-height:0"><h2 style="margin:0 0 4px">Crew · tap to swap</h2><div class="crew" id="crew" style="overflow-y:auto;min-height:0;flex:1;align-content:start"></div></div>
  </div></div></div>
  <div id="demoCap" style="position:absolute;left:0;right:0;bottom:26px;text-align:center;pointer-events:none;display:none"><div style="display:inline-block;background:rgba(7,8,15,.8);border:1px solid #2b3044;padding:8px 14px;max-width:70vw"><div class="eyebrow" id="demoTitle" style="color:var(--amber)"></div><p id="demoTxt" style="margin-top:3px"></p></div><div class="eyebrow" style="margin-top:6px">Auto-play demo · tap anywhere to stop</div></div>
@@ -207,6 +207,27 @@ function enterDock(){G.mode='dock';const n=SHOPS_G.length;const len=340+n*270+34
 function leaveDock(){D=null;G.mode='space';try{dockAmbience&&dockAmbience(false)}catch(e){}
  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t2=AC.currentTime;const bn=AC.createBuffer(1,11025,22050);const dd=bn.getChannelData(0);for(let i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*(1-i/dd.length)*.5;const sr=AC.createBufferSource();sr.buffer=bn;const g2=AC.createGain();g2.gain.value=G.mute?0:.06;sr.connect(g2);g2.connect(AC.destination);sr.start(t2)}catch(e){}
  msg('Airlock cycled. Clear of the berth.',3)}
+function openWanderer(){const c=$('stCard');snd('lvl');
+ const arts=(G.arts||[]).length?G.arts:[];const artVal=800;
+ c.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="eyebrow" style="color:#c9d2ea">◈ THE WANDERER · OLDER THAN THE CHARTS</span><span class="pill">${G.credits}¢</span></div>
+ <div style="display:flex;gap:10px;align-items:center;margin:8px 0"><div style="width:56px;height:56px;border:1px solid #3a4560;background:radial-gradient(circle at 40% 40%,#1a2136,#05070d);flex:none;display:flex;align-items:center;justify-content:center;font-size:24px;color:#c9d2ea">◈</div>
+ <div style="font-size:13px;color:var(--dim);font-style:italic">"We were trading these lanes when your Hearth was a coal. Sit. The dark can wait."<br><span style="color:#c9d2ea">It does not say what it is. The hull hums at 38 hertz.</span></div></div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+ <button data-w="crate" style="margin:0;min-height:56px" ${G.credits<800?'disabled':''}>◈ MYSTERY CRATE · 800¢<span style="display:block;font-size:11px;color:var(--dim)">"something you do not have"</span></button>
+ <button data-w="art" style="margin:0;min-height:56px" ${arts.length?'':'disabled'}>◬ SELL AN ARTIFACT · ${artVal}¢<span style="display:block;font-size:11px;color:var(--dim)">${arts.length?arts.length+' aboard · it pays over market':'none aboard'}</span></button>
+ <button data-w="ask" style="margin:0;min-height:44px">◉ ASK WHAT IT IS</button>
+ <button data-w="leave" style="margin:0;min-height:44px">✖ PULL AWAY</button>
+ </div>`;
+ show('pStation');
+ c.querySelectorAll('[data-w]').forEach(b=>b.onclick=()=>{const k=b.dataset.w;
+  if(k==='crate'){if(G.credits<800)return;G.credits-=800;const pool=['cool','warpcoil','gravframe','scoop'].filter(a=>!G.addons[a]);let got;
+   if(pool.length&&Math.random()<.6){got=pool[Math.floor(Math.random()*pool.length)];G.addons[got]=1;msg('The crate unfolds itself: '+ADDON[got].n+'. Fitted before you can ask how.',7)}
+   else if(!G.weapons.includes('ghost')&&Math.random()<.5){G.weapons.push('ghost');msg('Inside: a Ghost torpedo, wrapped in cloth that eats the light.',7)}
+   else{const pearls=2+Math.floor(Math.random()*3);G.stormPearls=(G.stormPearls||0)+pearls;msg('Inside: '+pearls+' storm pearls, still warm, still murmuring.',6)}
+   snd('lvl');save(1);openWanderer();return}
+  if(k==='art'){if(!(G.arts||[]).length)return;const a=G.arts.pop();G.credits+=800;msg('It takes the '+a+' with something like reverence. +800¢',6);snd('lvl');save(1);openWanderer();return}
+  if(k==='ask'){msg('"We are what stayed behind when the First Light left. Someone must keep the till." It will say nothing else.',8);if(!G._wandLog){G._wandLog=1;G.log.push({n:'The Wanderer',t:'A hull older than the Authority, longer than the docktown strip, stalled you in the deep dark to run a shop. Asked what it is, it said: we are what stayed behind when the First Light left. Someone must keep the till.'})}return}
+  if(k==='leave'){closePanel();if(G._wand)G._wand.t=1e9;msg('The hum releases your keel. Fly.',4)}});}
 function openClub(){const c=$('stCard');G._fromDock=1;G._dockShop=null;snd('lvl');
  const rows=['ripper','ghost','howler'].map(k=>{const w=WEAP[k];const own=G.weapons.includes(k);const [sl9]=WSLOT[k]||['S'];const slc=sl9==='L'?'var(--rose)':sl9==='M'?'var(--violet)':'var(--teal)';
   return `<div class="wcard" style="border-color:#3b2b60"><canvas class="iico" data-i="${k}" width="40" height="40" style="width:30px;height:30px;flex:none;border:1px solid #3b2b60"></canvas><div style="flex:1;min-width:0;overflow:hidden"><b style="font-size:13px">${w.n}</b> <span class="pill" style="border-color:${slc};color:${slc};padding:0 5px">${sl9}</span><div style="font-size:11px;color:var(--violet);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${w.d} · ⚔ ${w.dmg} · ↻ ${w.cd}s</div></div>${own?'<b class="statSym" style="flex:none">OWNED</b>':`<button data-cbuy="${k}" style="margin:0;padding:6px 12px;min-height:36px;flex:none;border-color:var(--violet);color:var(--violet)" ${G.credits<w.price?'disabled':''}>${w.price}¢</button>`}</div>`}).join('');
@@ -805,7 +826,13 @@ function updSpace(dt){const s=G.ship;let ax=axis();if(G.route&&!ax.x&&!ax.y){con
   for(const p9 of sy.planets){const dp=dist(p9,s5);if(dp<p9.r*.9&&Math.random()<dt*4)G.fx.push({x:s5.x+R(-10,10),y:s5.y+R(-10,10),vx:R(-14,14),vy:R(-14,14),l:.3,c:'rgba(200,220,255,.35)',r:1.2});
  if(dp>p9.r*.92&&dp<p9.r*1.6&&Math.hypot(s5.vx,s5.vy)>330&&!(G._gaDone&&G._gaDone[p9.id])){G._gaDone=G._gaDone||{};G._gaDone[p9.id]=1;G.gaCount=(G.gaCount||0)+1;s5.vx*=1.08;s5.vy*=1.08;gainXp('piloting',8);msg(`Gravity assist off ${p9.name} — +8% velocity banked. Textbook.`,4);snd('lvl')}
  if(dp>p9.r*.9&&dp<p9.r*6){const ga=Math.min(55,140*p9.r*p9.r/(dp*dp));s5.vx+=((p9.x-s5.x)/dp)*ga*dt;s5.vy+=((p9.y-s5.y)/dp)*ga*dt;if(ga>(G._gravA||0)){G._gravA=ga;G._gravD=Math.atan2(p9.y-s5.y,p9.x-s5.x);G._gravP=p9}}}}}
- {const stH=homeSys().station;const dSt=Math.hypot(G.ship.x-stH.x,G.ship.y-stH.y);
+ {const dO=Math.hypot(G.ship.x,G.ship.y);
+ if(!G._wand&&dO>3500&&G.t>400&&(!G._wandCd||G.t-G._wandCd>900)&&Math.random()<dt/240){G._wandCd=G.t;const wa=Math.random()*6.28;G._wand={x:G.ship.x+Math.cos(wa)*1400,y:G.ship.y+Math.sin(wa)*1400,t:0,met:0};msg('◈ Contact. Very large. Very old. It is not moving — and now, neither are you much.',7);snd('hail')}
+ if(G._wand){const wd=dist(G._wand,G.ship);G._wand.t+=dt;
+  if(wd<800){G.ship.vx*=(1-dt*.8);G.ship.vy*=(1-dt*.8);if(!G._wand.hum||G.t-G._wand.hum>2.2){G._wand.hum=G.t;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t2=AC.currentTime;const o=AC.createOscillator(),g2=AC.createGain();o.type='sine';o.frequency.value=38;g2.gain.setValueAtTime(0,t2);g2.gain.linearRampToValueAtTime(G.mute?0:.07,t2+.4);g2.gain.linearRampToValueAtTime(0,t2+2);o.connect(g2);g2.connect(AC.destination);o.start(t2);o.stop(t2+2.1)}catch(e){}}}
+  if(wd<300&&!G._wand.met){G._wand.met=1;openWanderer()}
+  if(wd>2600||G._wand.t>300){G._wand=null;msg('The old hull lets go of the dark and is gone between frames.',5)}}
+ const stH=homeSys().station;const dSt=Math.hypot(G.ship.x-stH.x,G.ship.y-stH.y);
  // Reaver raid event
  if(!RAID.on&&dSt<2600&&G.t>240&&(!G._raidCd||G.t-G._raidCd>600)&&Math.random()<dt/200){RAID={on:1,t:0};G._raidCd=G.t;G.banner={t:3,txt:'⛨ REAVER RAID',sub:'THE LAMPS ARE UNDER ATTACK — DEFEND THE STATION'};msg('⛨ KLAXON — Reaver raid inbound on Hearth Station! The Hearthguard is scrambling. Stand and fight, Freeholder!',9);snd('boom');shakeIt(6);
   for(let ri=0;ri<5;ri++){const ra=Math.random()*6.28;G.enemies.push({x:stH.x+Math.cos(ra)*1600,y:stH.y+Math.sin(ra)*1600,vx:0,vy:0,hp:ri===4?120:70,kind:ri===4?'gunship':'raider',race:'kessen',ct:1.5+Math.random(),ph:Math.random()*6,hostile:1,rd:1})}}
@@ -2088,6 +2115,13 @@ function drawSpace(){SPZ=.72*(ENC.z||1);const s=G.ship,c=G.cam;if(shake>0){shake
    cx.fillStyle='#242b3e';cx.beginPath();cx.moveTo(5,0);cx.lineTo(-4,-2.4);cx.lineTo(-4,2.4);cx.closePath();cx.fill();
    cx.fillStyle='rgba(126,240,255,.8)';cx.fillRect(-6,-1,2,2);cx.restore()}
   cx.restore()
+ // the Wanderer
+ if(G._wand&&Math.abs(G._wand.x-c.x)<W*1.4&&Math.abs(G._wand.y-c.y)<H*1.4){cx.save();cx.translate(G._wand.x,G._wand.y);cx.rotate(.22);
+  cx.fillStyle='#0d1019';cx.beginPath();cx.moveTo(120,0);cx.lineTo(-80,-22);cx.lineTo(-118,0);cx.lineTo(-80,22);cx.closePath();cx.fill();cx.strokeStyle='rgba(110,120,150,.5)';cx.lineWidth=1;cx.stroke();
+  for(let i9=0;i9<7;i9++){cx.fillStyle='rgba(40,46,66,.9)';cx.fillRect(-70+i9*26,-3,14,6)}
+  const lp=((G.t*40)%240)-120;cx.fillStyle='rgba(255,240,200,.9)';cx.fillRect(lp,-2,5,4);const lg9=cx.createRadialGradient(lp+2,0,1,lp+2,0,16);lg9.addColorStop(0,'rgba(255,240,200,.5)');lg9.addColorStop(1,'transparent');cx.fillStyle=lg9;cx.beginPath();cx.arc(lp+2,0,16,0,6.28);cx.fill();
+  cx.restore();
+  cx.fillStyle='rgba(200,210,235,.7)';cx.font='11px monospace';cx.textAlign='center';cx.fillText('◈ THE WANDERER',G._wand.x,G._wand.y-44)}
  // the Silent Fleet — graveyard on the far side of the third door
  {const fb=wormPairs()[2].b;if(Math.abs(fb.x-c.x)<W*1.6&&Math.abs(fb.y-c.y)<H*1.6){
   const HK=[[-160,-40,.5,2.2],[120,-110,2.4,1.7],[260,60,1.1,2.6],[-60,170,3.8,1.9],[40,-230,5.2,1.5],[-260,90,.9,1.8]];
