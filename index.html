@@ -154,7 +154,7 @@ body.allowPortrait #rot{display:none!important}
  <div class="panel on" id="pTitle"><div class="card tcard" style="padding:10px 16px;width:96vw;max-width:96vw;overflow:hidden"><div class="title">
   <div style="display:flex;flex-direction:column;justify-content:center;min-height:0"><div class="eyebrow">Freehold Registry · Vessel FL-7</div><div id="titleStats" class="statSym" style="display:none;color:var(--teal);margin:2px 0"></div><h1>FARLIGHT</h1><div class="tagline">A LIVING SCRAPED FROM THE FAR DARK</div>
   <p class="blurb" style="margin-top:6px">Hearth is the last lit port before the charts run out. You hold a freehold: one tired ship, an open ledger, and the right to keep whatever the dark gives up. Fly out, land, dig, haul, deal — the further you drift, the stranger and richer it gets, and the harder it fights back.</p>
-  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">⛴ Continue voyage</button><button id="bNew" style="display:none;border-color:var(--rose);color:var(--rose)">Start new (erase save)</button></div><div class="vfoot">v173 · BLYTHE CACTUS SOFTWARE</div></div>
+  <div style="margin-top:8px"><button class="go" id="bQuick">Quick start</button><button id="bDemo" style="border-color:var(--teal);color:var(--teal)">▶ Watch the demo</button><br><button id="bStart">Launch with this crew</button><button id="bHow">How to play</button><button id="bMute2">Sound: on</button><button id="bCont" style="display:none">⛴ Continue voyage</button><button id="bNew" style="display:none;border-color:var(--rose);color:var(--rose)">Start new (erase save)</button></div><div class="vfoot">v174 · BLYTHE CACTUS SOFTWARE</div></div>
   <div style="display:flex;flex-direction:column;min-height:0"><h2 style="margin:0 0 4px">Crew · tap to swap</h2><div class="crew" id="crew" style="overflow-y:auto;min-height:0;flex:1;align-content:start"></div></div>
  </div></div></div>
  <div id="demoCap" style="position:absolute;left:0;right:0;bottom:26px;text-align:center;pointer-events:none;display:none"><div style="display:inline-block;background:rgba(7,8,15,.8);border:1px solid #2b3044;padding:8px 14px;max-width:70vw"><div class="eyebrow" id="demoTitle" style="color:var(--amber)"></div><p id="demoTxt" style="margin-top:3px"></p></div><div class="eyebrow" style="margin-top:6px">Auto-play demo · tap anywhere to stop</div></div>
@@ -203,7 +203,7 @@ let D=null;
 function enterDock(){G.mode='dock';const n=SHOPS_G.length;const len=340+n*270+340;
  D={px:150,vx:0,len,cam:0,doors:SHOPS_G.map((sh,i)=>({x:340+i*270+110,sh})),walkers:[...Array(9)].map((_,i)=>({x:300+Math.random()*(len-600),v:(Math.random()<.5?-1:1)*(14+Math.random()*22),ph:Math.random()*6,sp:['human','human','human','veil','veil','kessen','kessen','thessi','thessi'][i]}))};
  try{dockAmbience&&dockAmbience(true)}catch(e){}
- const st9=shopStage();if(st9>(G.shopStage||0)){G.shopStage=st9;setTimeout(()=>{msg('DOCKTOWN PA: "New stock on the promenade." '+STAGE_MSGS[st9],8);snd('lvl')},1200)}else msg('Hearth promenade — walk the strip. Step to a door and press the action button to enter.',5);snd('hail')}
+ const st9=shopStage();if(st9>(G.shopStage||0)){G.shopStage=st9;setTimeout(()=>{paCrackle();setTimeout(()=>{msg('DOCKTOWN PA: "New stock on the promenade." '+STAGE_MSGS[st9],8);snd('lvl')},180)},1200)}else msg('Hearth promenade — walk the strip. Step to a door and press the action button to enter.',5);snd('hail')}
 function leaveDock(){D=null;G.mode='space';try{dockAmbience&&dockAmbience(false)}catch(e){}
  try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t2=AC.currentTime;const bn=AC.createBuffer(1,11025,22050);const dd=bn.getChannelData(0);for(let i=0;i<dd.length;i++)dd[i]=(Math.random()*2-1)*(1-i/dd.length)*.5;const sr=AC.createBufferSource();sr.buffer=bn;const g2=AC.createGain();g2.gain.value=G.mute?0:.06;sr.connect(g2);g2.connect(AC.destination);sr.start(t2)}catch(e){}
  msg('Airlock cycled. Clear of the berth.',3)}
@@ -228,6 +228,7 @@ function openClub(){const c=$('stCard');G._fromDock=1;G._dockShop=null;snd('lvl'
   g.strokeStyle='rgba(232,107,138,.6)';g.strokeRect(Wc-130,26,90,34);g.fillStyle='rgba(232,107,138,.8)';g.font='8px monospace';g.fillText('NO AUTHORITY',Wc-85,45)}
  c.querySelectorAll('[data-cbuy]').forEach(b=>b.onclick=()=>{const k=b.dataset.cbuy;const w=WEAP[k];if(G.credits<w.price)return;G.credits-=w.price;G.weapons.push(k);msg('Whisper wraps the '+w.n+' in oilcloth. "Never saw you."',5);snd('lvl');save(1);openClub()});
  const bo=c.querySelector('#clubOut');if(bo)bo.onclick=()=>{G._fromDock=0;closePanel()}}
+function paCrackle(){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t=AC.currentTime;const bufN=AC.createBuffer(1,2205,22050);const d=bufN.getChannelData(0);for(let i=0;i<2205;i++)d[i]=(Math.random()*2-1)*(1-i/2205)*.5;const src=AC.createBufferSource();src.buffer=bufN;const g=AC.createGain();g.gain.setValueAtTime(G.mute?0:.12*(G.volS===undefined?1:G.volS),t);const f=AC.createBiquadFilter();f.type='highpass';f.frequency.value=1400;src.connect(f);f.connect(g);g.connect(AC.destination);src.start(t)}catch(e){}}
 function dockCtx(){if(!D)return null;
  if(D.px>D.len-190)return {t:'air'};
  let best=null,bd=52;for(const d of D.doors){const dd=Math.abs(D.px-d.x);if(dd<bd){bd=dd;best=d}}
@@ -420,6 +421,14 @@ function drawDock(){const nf=(Math.sin(G.t*.02)+1)/2;const night=nf<.4;
  {const bxp=250;if(bxp>D.cam-80&&bxp<D.cam+W+80){cx.fillStyle='#1a1e2e';cx.fillRect(bxp-22,FLOOR-14,44,4);cx.fillRect(bxp-20,FLOOR-10,4,10);cx.fillRect(bxp+16,FLOOR-10,4,10);cx.fillStyle='#8f8a78';cx.beginPath();cx.arc(bxp,FLOOR-24,3.6,0,6.28);cx.fill();cx.fillStyle='#6a6355';cx.fillRect(bxp-5,FLOOR-21,10,9);cx.fillRect(bxp-5,FLOOR-12,4,10);cx.fillRect(bxp+1,FLOOR-12,4,10)}}
  // skittering dock critter
  {D.crit=D.crit||{x:600,tx:600,t:0};const cr=D.crit;cr.t-=1/60;if(cr.t<=0){cr.tx=200+Math.random()*(D.len-400);cr.t=3+Math.random()*5}cr.x+=(cr.tx-cr.x)*.02;if(Math.abs(cr.tx-cr.x)>6&&cr.x>D.cam-40&&cr.x<D.cam+W+40){cx.fillStyle='#3a4055';cx.beginPath();cx.ellipse(cr.x,FLOOR-3,4,2.4,0,0,6.28);cx.fill();cx.fillStyle='#7ef0ff';cx.fillRect(cr.x+(cr.tx>cr.x?2:-3),FLOOR-4.4,1.2,1.2)}}
+ // keepers at their doors — step out and wave when you pass
+ for(const d of D.doors){if(Math.abs(D.px-d.x)<85){const K=KEEPERS[d.sh[0]];if(K){const kx=d.x+26,near=Math.abs(D.px-d.x)<40;
+  cx.fillStyle='#0a0c14';cx.beginPath();cx.ellipse(kx,FLOOR-1,5,2,0,0,6.28);cx.fill();
+  const kc=d.sh[3]||'#c9a06a';
+  cx.fillStyle='#3a4055';cx.fillRect(kx-4,FLOOR-19,8,12);cx.fillStyle=kc;cx.fillRect(kx-4,FLOOR-19,8,2.4);
+  cx.fillStyle=K.sp==='veil'?'#b48cf2':K.sp==='thessi'?'#7ec87e':'#c9a06a';cx.beginPath();cx.arc(kx,FLOOR-22,3.4,0,6.28);cx.fill();
+  if(near&&Math.sin(G.t*3.2)>0){cx.strokeStyle=kc;cx.lineWidth=2;cx.beginPath();cx.moveTo(kx+4,FLOOR-16);cx.lineTo(kx+9,FLOOR-24+Math.sin(G.t*9)*1.6);cx.stroke()}
+  else{cx.strokeStyle='#3a4055';cx.lineWidth=2;cx.beginPath();cx.moveTo(kx+4,FLOOR-16);cx.lineTo(kx+6,FLOOR-10);cx.stroke()}}}}
  // ambient walkers
  for(const w of D.walkers){drawDockWalker(w.x,FLOOR,w.v,w.sp)}
  // player
